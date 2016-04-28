@@ -6,6 +6,9 @@ from catalogos.serializers import CatalogoSerializer
 # Create your tests here.
 
 class CatalogoModelTest(TestCase):
+	def setUp(self): 
+		self.client = APIClient()
+
 	def test_guardar_obtener_catalogos(self):
 		catalogo1 = Catalogo()
 		catalogo1.nombre ="Proveedores"
@@ -22,21 +25,76 @@ class CatalogoModelTest(TestCase):
 		self.assertEqual(c1.nombre,"Proveedores")
 		self.assertEqual(c2.nombre,"Clientes")
 
-	def test_api_rest_guardar_catalogo(self):
-			client = APIClient()
-			response = client.post('/catalogos/', {'nombre': 'Proveedores'}, format='json')
-			self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-			self.assertEqual(Catalogo.objects.count(), 1)
-			self.assertEqual(Catalogo.objects.get().nombre, 'Proveedores')
-
-			#response = client.post('/catalogos/', {'nombre': 'Clientes'}, format='json')
-			#self.assertEqual(response,"")
-			#self.assertEqual(Catalogo.objects.count(), 2)
-			#self.assertEqual(Catalogo.objects.get(nombre='Clientes').nombre, 'Clientes')
 	def test_serializer_catalogo(self):
-		python_dict = {"nombre": "Proveedores"}
+		self.assertEqual(Catalogo.objects.count(), 0)
 		serializer = CatalogoSerializer(data={'nombre': 'Proveedores'})
 		self.assertTrue(serializer.is_valid())
-		self.assertEqual(serializer.data,python_dict)
+		serializer.save()
+		self.assertEqual(Catalogo.objects.count(), 1)
+		self.assertEqual(serializer.data,{'nombre': 'Proveedores', 'id': 1})
+
+	def test_enviar_datos_desde_desde_la_ruta(self):
+		#client = APIClient()
+		response = self.client.post('/catalogos/', {'nombre': 'Proveedores'}, format='json')
+		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+		self.assertEqual(Catalogo.objects.count(), 1)
+		self.assertEqual(response.data, {'nombre': 'Proveedores', 'id': 1})
+
+		response = self.client.post('/catalogos/', {'nombre': 'Clientes'}, format='json')
+		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+		self.assertEqual(Catalogo.objects.count(), 2)
+		self.assertEqual(response.data, {'nombre': 'Clientes', 'id': 2})	
+
+	def test_nombre_de_catalogo_es_unico(self):
+		response = self.client.post('/catalogos/', {'nombre': 'Proveedores'}, format='json')
+		response = self.client.post('/catalogos/', {'nombre': 'Proveedores'}, format='json')
+		#import ipdb;ipdb.set_trace()
+		self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+		self.assertEqual(response.data,{'nombre': ['El catalogo ya existe']})
+		self.assertEqual(Catalogo.objects.count(), 1)
+
+	def test_nombre_de_catalogo_no_debe_tener_espacios(self):
+		response = self.client.post('/catalogos/', {'nombre': '      Proveedores       '}, format='json')
+		self.assertEqual(response.data['nombre'],'Proveedores')		
+
+	def test_obtener_todos_los_catalogos_guardados(self):
+		self.cargar_catalogos()
+		response = self.client.get('/catalogos/', format='json')
+		self.assertEqual(len(response.data),2)
+
+	def test_obtener_catalogo_por_pk(self):
+		self.cargar_catalogos()
+		response = self.client.get('/catalogos/2/', format='json')
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.assertEqual(response.data['nombre'],'Clientes')
+
+	def test_obtener_catalogo_por_pk_que_no_existe(self):
+		self.cargar_catalogos()
+		response = self.client.get('/catalogos/3/', format='json')
+		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+	def test_modificar_nombre_catalogo(self):
+		self.cargar_catalogos()
+		self.client.put('/catalogos/2/', {'nombre': 'Cliente'}, format='json')
+		response = self.client.get('/catalogos/2/', format='json')
+		self.assertEqual(response.data, {'id': 2, 'nombre': 'Cliente'})
+
+	def test_eliminar_catalogo(self):
+		self.cargar_catalogos()
+		self.client.delete('/catalogos/2/', format='json')
+		response = self.client.get('/catalogos/2/', format='json')
+		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+	
+	def test_buscar_catalogo_que_contenga_en_el_nombre_un_valor(self):
+		self.cargar_catalogos()
+		self.client.post('/catalogos/', {'nombre': 'Clientes2'}, format='json')
+		self.client.post('/catalogos/', {'nombre': 'Pacientes'}, format='json')
+		response = self.client.get('/catalogos/buscar/entes/', format='json')
+		self.assertEqual(len(response.data),3)
+
+	def cargar_catalogos(self):
+		self.client.post('/catalogos/', {'nombre': 'Proveedores'}, format='json')
+		self.client.post('/catalogos/', {'nombre': 'Clientes'}, format='json')
+
 
 
