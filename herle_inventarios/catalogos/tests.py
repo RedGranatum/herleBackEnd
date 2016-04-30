@@ -1,3 +1,4 @@
+from django.db import connection
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -8,6 +9,8 @@ from catalogos.serializers import CatalogoSerializer
 class CatalogoModelTest(TestCase):
 	def setUp(self): 
 		self.client = APIClient()
+		cursor = connection.cursor()
+		cursor.execute("ALTER SEQUENCE catalogos_catalogo_id_seq RESTART WITH 1;")
 
 	def test_guardar_obtener_catalogos(self):
 		catalogo1 = Catalogo()
@@ -34,7 +37,6 @@ class CatalogoModelTest(TestCase):
 		self.assertEqual(serializer.data,{'nombre': 'Proveedores', 'id': 1})
 
 	def test_enviar_datos_desde_desde_la_ruta(self):
-		#client = APIClient()
 		response = self.client.post('/catalogos/', {'nombre': 'Proveedores'}, format='json')
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 		self.assertEqual(Catalogo.objects.count(), 1)
@@ -48,8 +50,7 @@ class CatalogoModelTest(TestCase):
 	def test_nombre_de_catalogo_es_unico(self):
 		response = self.client.post('/catalogos/', {'nombre': 'Proveedores'}, format='json')
 		response = self.client.post('/catalogos/', {'nombre': 'Proveedores'}, format='json')
-		#import ipdb;ipdb.set_trace()
-		self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 		self.assertEqual(response.data,{'nombre': ['El catalogo ya existe']})
 		self.assertEqual(Catalogo.objects.count(), 1)
 
@@ -89,12 +90,12 @@ class CatalogoModelTest(TestCase):
 		self.cargar_catalogos()
 		self.client.post('/catalogos/', {'nombre': 'Clientes2'}, format='json')
 		self.client.post('/catalogos/', {'nombre': 'Pacientes'}, format='json')
-		response = self.client.get('/catalogos/buscar/entes/', format='json')
-		self.assertEqual(len(response.data),3)
+		self.client.post('/catalogos/', {'nombre': 'Pais'}, format='json')
+		self.client.post('/catalogos/', {'nombre': 'Parientes'}, format='json')
+		response = self.client.get('/catalogos/buscar/?valor_buscado=entes', format='json')
+		#import ipdb;ipdb.set_trace()
+		self.assertEqual(len(response.data),4)
 
 	def cargar_catalogos(self):
 		self.client.post('/catalogos/', {'nombre': 'Proveedores'}, format='json')
 		self.client.post('/catalogos/', {'nombre': 'Clientes'}, format='json')
-
-
-
