@@ -35,12 +35,12 @@ class CatalogoDetalleModelTest(TestCase):
 		self.assertTrue(serializer.is_valid())
 		serializer.save()
 		existen =CatalogoDetalle.objects.all()
-		self.assertEqual(existen.count(), 3)
+		self.assertEqual(existen.count(), 4)
 
 	def test_obtener_todos_los_catalogos_detalles_guardados(self):
 		self.cargar_catalogos_detalles()
 		response = self.client.get('/catalogo_detalles/', format='json')
-		self.assertEqual(len(response.data),2)
+		self.assertEqual(len(response.data),3)
 
 	def test_enviar_datos_desde_desde_la_ruta(self):
 		self.cargar_catalogos_detalles()
@@ -84,11 +84,23 @@ class CatalogoDetalleModelTest(TestCase):
 		response = self.client.get('/catalogo_detalles/0010000/', format='json')
 		self.assertEqual(response.data['descripcion1'],'detalle modificado')
 
+
 	def test_eliminar_catalogo(self):
 		self.cargar_catalogos_detalles()
 		self.client.delete('/catalogo_detalles/0010000/', format='json')
 		response = self.client.get('/catalogo_detalles/0010000/', format='json')
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+	def test_obtener_detalles_de_un_cdu_catalogo(self):
+		self.cargar_catalogos_detalles()
+		response = self.client.get('/catalogos/1/catalogo_detalles/', format='json')
+		#import ipdb;ipdb.set_trace()
+		self.assertEqual(len(response.data),2)
+
+		response = self.client.get('/catalogos/2/catalogo_detalles/', format='json')
+		self.assertEqual(len(response.data),1)
+
+	
 
 	def cargar_catalogos(self):
 		self.catalogo1 = Catalogo()
@@ -110,3 +122,8 @@ class CatalogoDetalleModelTest(TestCase):
 		catalogo_det2.catalogos = self.catalogo1
 		catalogo_det2.descripcion1 ="detalle2"
 		catalogo_det2.save()	
+
+		catalogo_det3 = CatalogoDetalle()
+		catalogo_det3.catalogos = self.catalogo2
+		catalogo_det3.descripcion1 ="otro catalogo"
+		catalogo_det3.save()	

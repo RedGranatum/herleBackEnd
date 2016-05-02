@@ -1,4 +1,4 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 import django_filters
 from rest_framework import filters,generics,status
 from rest_framework.response import Response
@@ -16,3 +16,12 @@ class CatalogoDetalleLista(CatalogoDetalleMixin, ListCreateAPIView):
 
 class CatalogoDetalleIndividual(CatalogoDetalleMixin,RetrieveUpdateDestroyAPIView):
 	pass
+
+class CatalogoDetalleCatalogo(ListAPIView):
+	model = CatalogoDetalle
+	serializer_class = CatalogoDetalleSerializer
+
+	def get_queryset(self):
+		catalogos_id = self.kwargs['catalogos_id']
+		queryset = self.model.objects.filter(catalogos=catalogos_id)
+		return queryset
