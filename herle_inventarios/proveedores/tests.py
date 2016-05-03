@@ -121,6 +121,32 @@ class ProovedoresModelTest(TestCase):
 		response = self.client.get('/proveedores/1/', format='json')
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+	def test_buscar_proveedor_por_codigo_nombre_o_rfc(self):
+		self.cargar_proveedores()
+		data = {"codigo": "E1","nombre":"El Agua","calle":"conocida","numero":"1","cp":"232","pais":"0010000","estado":"0020000","rfc":"rasa","telefono":"232","email":"","comentarios":"no hay"}
+		response = self.client.post('/proveedores/',data, format='json')
+
+		data = {"codigo": "E2","nombre":"El Agua del oriente","calle":"conocida","numero":"1","cp":"232","pais":"0010000","estado":"0020000","rfc":"dsa","telefono":"232","email":"","comentarios":"no hay"}
+		response = self.client.post('/proveedores/',data, format='json')
+
+		data = {"codigo": "Nuev23","nombre":"El pescadito dsa","calle":"conocida","numero":"1","cp":"232","pais":"0010000","estado":"0020000","rfc":"cccc2","telefono":"232","email":"","comentarios":"no hay"}
+		response = self.client.post('/proveedores/',data, format='json')
+
+		data = {"codigo": "A33dsa","nombre":"Nueva vida","calle":"conocida","numero":"1","cp":"232","pais":"0010000","estado":"0020000","rfc":"223ds","telefono":"232","email":"","comentarios":"no hay"}
+		response = self.client.post('/proveedores/',data, format='json')
+
+		response = self.client.get('/proveedores/buscar/proveedor/', format='json')
+		self.assertEqual(len(response.data), 1)
+
+		response = self.client.get('/proveedores/buscar/agua/', format='json')
+		#import ipdb;ipdb.set_trace()
+		self.assertEqual(len(response.data), 2)
+
+		response = self.client.get('/proveedores/buscar/nuev/', format='json')
+		self.assertEqual(len(response.data), 2)
+
+		response = self.client.get('/proveedores/buscar/dsa/', format='json')
+		self.assertEqual(len(response.data), 3)
 
 	def cargar_proveedores(self):
 		data = {"codigo": "A1","nombre":"El proveedor","calle":"conocida","numero":"1","cp":"232","pais":"0010000","estado":"0020000","rfc":"aaa","telefono":"232","email":"","comentarios":"no hay"}
