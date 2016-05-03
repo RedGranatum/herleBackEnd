@@ -42,3 +42,4 @@ class CatalogoBusqueda(generics.ListAPIView):
 	serializer_class = CatalogoSerializer
 	filter_backends = (filters.DjangoFilterBackend,)
 	filter_class = CatalogoFilter
+	

@@ -26,5 +26,5 @@ class CatalogoDetalle(models.Model):
 		super(CatalogoDetalle, self).save(*args, **kwargs)
 
 
-	def __unicode__(self):
+	def __str__(self):
 		return '%s: %s' % (self.cdu_catalogo, self.descripcion1)

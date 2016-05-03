@@ -100,7 +100,30 @@ class CatalogoDetalleModelTest(TestCase):
 		response = self.client.get('/catalogos/2/catalogo_detalles/', format='json')
 		self.assertEqual(len(response.data),1)
 
+	def test_obtener_detalles_de_un_detalle_por_medio_del_cdu_default(self):
+		self.cargar_catalogos_detalles();
+		response = self.client.get('/catalogo_detalles/0020000/catalogo_detalles/', format='json')
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.assertEqual(len(response.data),0)
+
+		data ={"cdu_catalogo":"","num_dcatalogo":0,"descripcion1":"detalle","descripcion2":"","monto1":"0.00","monto2":"0.00","cdu_default":"0020000","catalogos":1}
+		self.client.post('/catalogo_detalles/',data, format='json')
+		self.client.post('/catalogo_detalles/',data, format='json')
+
+		response = self.client.get('/catalogo_detalles/0020000/catalogo_detalles/', format='json')
+		self.assertEqual(len(response.data),2)
 	
+	def test_buscar_detalle_por_descripcion(self):
+		self.cargar_catalogos_detalles();
+		response = self.client.get('/catalogo_detalles/buscar/?valor_buscado=deta', format='json')
+		self.assertEqual(len(response.data),2)
+
+		data ={"cdu_catalogo":"","num_dcatalogo":0,"descripcion1":"Numero detallista","descripcion2":"","monto1":"0.00","monto2":"0.00","cdu_default":"","catalogos":2}
+		self.client.post('/catalogo_detalles/',data, format='json')
+		response = self.client.get('/catalogo_detalles/buscar/?valor_buscado=deta', format='json')
+		self.assertEqual(len(response.data),3)	
+	
+
 
 	def cargar_catalogos(self):
 		self.catalogo1 = Catalogo()
