@@ -20,7 +20,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^', include('catalogos.urls')),
     url(r'^', include('catalogo_detalles.urls')),
-
+    url(r'^', include('proveedores.urls')),
 ]
 
 

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'catalogos',
     'catalogo_detalles',
+    'proveedores',
 ]
 
 MIDDLEWARE_CLASSES = [
