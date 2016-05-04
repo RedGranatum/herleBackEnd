@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'catalogos',
     'catalogo_detalles',
     'proveedores',
+    'clientes',
 ]
 
 MIDDLEWARE_CLASSES = [

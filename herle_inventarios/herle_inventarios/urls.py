@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^', include('catalogos.urls')),
     url(r'^', include('catalogo_detalles.urls')),
     url(r'^', include('proveedores.urls')),
+    url(r'^', include('clientes.urls')),
 ]
 
 

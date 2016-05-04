@@ -47,15 +47,6 @@ class ProovedoresModelTest(TestCase):
 		#import ipdb;ipdb.set_trace()
 		self.assertEqual(existen.count(), 1)
 
-	def test_serializer_proveedores(self):
-		numero_cat= CatalogoDetalle.objects.all()
-		data = {"codigo": "A1","nombre":"El proveedor","calle":"conocida","numero":"1","cp":"232","pais":"0010000","estado":"0020000","rfc":"aaa","telefono":"232","email":"","comentarios":"no hay"}
-		serializer = ProveedorSerializer(data=data)
-		self.assertTrue(serializer.is_valid())
-		serializer.save()
-		existen =Proveedor.objects.all()
-		#import ipdb;ipdb.set_trace()
-		self.assertEqual(existen.count(), 1)
 
 #	def test_serializer_proveedores_con_pais_incorrecto(self):
 #		numero_cat= CatalogoDetalle.objects.all()
