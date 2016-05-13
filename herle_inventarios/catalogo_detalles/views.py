@@ -7,6 +7,21 @@ from catalogo_detalles.models import CatalogoDetalle
 from catalogo_detalles.serializers import CatalogoDetalleSerializer
 
 
+class CatalogoDetalleMasivo(APIView):
+	def post(self, request, format=None):
+		datos = request.data;
+		serializer = CatalogoDetalleSerializer(data=request.data,many=True)
+		if serializer.is_valid():
+			try:
+				serializer.save()
+				return Response(serializer.data, status=status.HTTP_201_CREATED)
+			except IntegrityError as e:
+				import ipdb;ipdb.set_trace()
+				return Response({"La clave de la empresa ya existe"}, status=status.HTTP_403_FORBIDDEN)
+		import ipdb;ipdb.set_trace()
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class CatalogoDetalleMixin(object):
 	queryset = CatalogoDetalle.objects.all()
 	serializer_class = CatalogoDetalleSerializer
