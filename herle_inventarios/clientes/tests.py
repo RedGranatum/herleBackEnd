@@ -27,6 +27,7 @@ class ClientesModelTest(TestCase):
 		cliente1.pais = self.detPaises1
 		cliente1.estado = self.detEstado1
 		cliente1.rfc = "dsads"
+		cliente1.colonia ="nueva colonia"
 		cliente1.telefono ="23232"
 		cliente1.email = "dsad@dsads.com"
 		cliente1.banco = self.detBanco1 

@@ -25,6 +25,7 @@ class ProovedoresModelTest(TestCase):
 		proveedor1.nombre ="nombre proveedor"
 		proveedor1.calle  ="calle del proveedor"
 		proveedor1.numero = "1a interior 3"
+		proveedor1.colonia ="nueva colonia"
 		proveedor1.cp = "22222"
 		proveedor1.pais = self.detPaises1
 		proveedor1.estado = self.detEstado1 

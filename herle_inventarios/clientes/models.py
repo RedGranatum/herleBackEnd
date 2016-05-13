@@ -6,6 +6,7 @@ class Cliente(models.Model):
 	nombre  = models.CharField(max_length=100, default='', unique=True,error_messages={'unique':"El nombre del Cliente ya existe"})
 	calle   = models.CharField(max_length=200, default='')
 	numero  = models.CharField(max_length=50, default='')
+	colonia = models.CharField(max_length=50, default='')
 	cp      = models.CharField(max_length=10, default = '')
 	pais    = models.ForeignKey(CatalogoDetalle,to_field='cdu_catalogo',default='',related_name='cliente_pais',limit_choices_to={'catalogos': 1}, on_delete=models.PROTECT)						
 	estado  = models.ForeignKey(CatalogoDetalle,to_field='cdu_catalogo',default='',related_name='cliente_estado',limit_choices_to={'catalogos': 2}, on_delete=models.PROTECT)						
