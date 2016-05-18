@@ -6,8 +6,11 @@ from rest_framework import filters,generics,status
 from catalogos.models import Catalogo
 from catalogo_detalles.models import CatalogoDetalle
 from compras.models import Compra
+from compras_detalles.models import CompraDetalle
 from proveedores.models import Proveedor
-from compras.serializers import CompraSerializer
+from compras.serializers import CompraSerializer,CompraConDetalleSerializer
+from compras_detalles.serializers import CompraDetalleSerializer
+
 
 class ComprasModelTest(TestCase):
 	def setUp(self):
@@ -139,6 +142,29 @@ class ComprasModelTest(TestCase):
 		response = self.client.get('/compras/buscar/BB/', format='json')
 		self.assertEqual(len(response.data), 2)
 
+	def test_serializer_compra_con_detalle_incluido(self):
+		self.cargar_compra()
+		self.carga_detalles_compra()
+		comp =  Compra.objects.all().get(pk=1)
+		#comps = CompraDetalle.objects.filter(compra__id =1)
+		serializer = CompraConDetalleSerializer(instance=comp)
+		#import ipdb;ipdb.set_trace()
+		datos = serializer.data
+		#datos_esperados ={'fec_solicitud': '2015-12-13', 'proveedor': 1, 'transporte': 'por avion', 'bln_activa': True, 'comentarios': 'estamos esperando la llegada del producto', 'precio_dolar': '17.12', 'id': 1, 'invoice': 'AA1', 'casa_cambio': 'banxico', 'fec_inventario': '2015-12-12', 'tipo_moneda': '0040000', 'fec_aduana': '2015-12-12', 'descripcion': 'la compra llegara pronto', 'fec_real': '2015-12-12', 'compra_detalles': ['OrderedDict'([('id', 2), ('compra', 1), ('material', '0050001'), ('dsc_material', 'Material 3'), ('calibre', '3.200'), ('ancho', '2.40'), ('largo', 7), ('peso_kg', '18.19'), ('peso_lb', '10.20'), ('num_rollo', 'BBKS'), ('precio', '28.99')]), 'OrderedDict'([('id', 1), ('compra', 1), ('material', '0050001'), ('dsc_material', 'Material 2'), ('calibre', '1.200'), ('ancho', '3.70'), ('largo', 12), ('peso_kg', '23.12'), ('peso_lb', '30.20'), ('num_rollo', 'ACC22MR'), ('precio', '123.65')])]}
+		#self.assertEqual(datos,datos_esperados)
+
+	def test_obtener_compras_con_detalles_desde_desde_la_ruta(self):
+		self.cargar_compra()
+		self.carga_detalles_compra()
+		response = self.client.get('/compras/1/detalles/', format='json')
+		self.assertEqual(response.status_code, status.HTTP_200_OK)		
+		self.assertEqual(len(response.data),15)
+
+		response = self.client.get('/compras/2/detalles/', format='json')
+		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+		self.assertEqual(len(response.data),1)
+
+
 	def cargar_compra(self):
 		self.compra1 = Compra()
 		self.compra1.invoice ="AA1"
@@ -157,8 +183,21 @@ class ComprasModelTest(TestCase):
 		self.compra1.descripcion ="la compra llegara pronto"
 		self.compra1.comentarios ="estamos esperando la llegada del producto"
 		self.compra1.save()
-	
 
+	def carga_detalles_compra(self):
+		data = {"compra":"1","material":"0050001","dsc_material":"Material 2","calibre": "1.2","ancho": "3.7",
+				"largo": "12","peso_kg":"23.12","peso_lb":"30.2","num_rollo":"ACC22MR","precio":"123.65"}
+	
+		serializer = CompraDetalleSerializer(data=data)
+		self.assertTrue(serializer.is_valid())
+		serializer.save()
+
+		data = {"compra":"1","material":"0050001","dsc_material":"Material 3","calibre": "3.2","ancho": "2.4",
+				"largo": "7","peso_kg":"18.19","peso_lb":"10.2","num_rollo":"BBKS","precio":"28.99"}
+		serializer = CompraDetalleSerializer(data=data)
+		self.assertTrue(serializer.is_valid())
+		serializer.save()
+		
 	def cargar_proveedores(self):
 		self.proveedor1 = Proveedor()
 		self.proveedor1.codigo ="1A"
@@ -192,6 +231,10 @@ class ComprasModelTest(TestCase):
 		self.catalogoMonedas.nombre ="Monedas"
 		self.catalogoMonedas.save()
 
+		self.catalogoMaterial = Catalogo()
+		self.catalogoMaterial.nombre ="Material"
+		self.catalogoMaterial.save()
+
 
 	def cargar_catalogos_detalles(self):
 		self.detMoneda1 = CatalogoDetalle()
@@ -204,3 +247,12 @@ class ComprasModelTest(TestCase):
 		self.detMoneda2.descripcion1 ="Dolar"
 		self.detMoneda2.save()
 
+		self.detMaterial1 = CatalogoDetalle()
+		self.detMaterial1.catalogos = self.catalogoMaterial
+		self.detMaterial1.descripcion1 ="Material 1"
+		self.detMaterial1.save()
+		
+		self.detMaterial2 = CatalogoDetalle()
+		self.detMaterial2.catalogos = self.catalogoMaterial
+		self.detMaterial2.descripcion1 ="Material 2"
+		self.detMaterial2.save()

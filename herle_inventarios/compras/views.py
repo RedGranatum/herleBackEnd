@@ -3,17 +3,26 @@ from django.shortcuts import render
 from django.db.models import Q
 
 from compras.models import Compra
-from compras.serializers import CompraSerializer
+from compras.serializers import CompraSerializer,CompraConDetalleSerializer
 
-class CompraDetalleMixin(object):
+class CompraMixin(object):
 	queryset = Compra.objects.all()
 	serializer_class = CompraSerializer
 
-class CompraLista(CompraDetalleMixin, ListCreateAPIView):
+class CompraLista(CompraMixin, ListCreateAPIView):
 	pass
 
-class CompraIndividual(CompraDetalleMixin,RetrieveUpdateDestroyAPIView):
+class CompraIndividual(CompraMixin,RetrieveUpdateDestroyAPIView):
 	pass
+
+
+class CompraConDetallesMixin(object):
+	queryset = Compra.objects.all()
+	serializer_class = CompraConDetalleSerializer
+
+
+class CompraConDetallesIndividual(CompraConDetallesMixin,RetrieveUpdateDestroyAPIView):
+	pass	
 
 class CompraFiltrosMixin(object):
 	model = Compra
