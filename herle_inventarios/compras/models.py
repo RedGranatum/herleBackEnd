@@ -4,7 +4,7 @@ from catalogo_detalles.models import CatalogoDetalle
 
 class Compra(models.Model):
 	invoice 	   = models.CharField(max_length=10,default="",unique=True,error_messages={'unique':"El numero de invoice ya existe"})
-	proveedor 	   = models.ForeignKey(Proveedor,default=0,related_name='compra_proveedor', on_delete=models.PROTECT)		
+	proveedor 	   = models.ForeignKey(Proveedor,related_name='compra_id_proveedor', on_delete=models.PROTECT)		
 	fec_solicitud  = models.DateField(default='1900-01-01')
 	fec_aduana 	   = models.DateField(default='1900-01-01')
 	fec_inventario = models.DateField(default='1900-01-01')

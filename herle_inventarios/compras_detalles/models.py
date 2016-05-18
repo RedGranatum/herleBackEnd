@@ -3,7 +3,7 @@ from compras.models import Compra
 from catalogo_detalles.models import CatalogoDetalle
 
 class CompraDetalle(models.Model):
-	compra 	       = models.ForeignKey(Compra,default=0,related_name='compra_detalles', on_delete=models.PROTECT)		
+	compra 	       = models.ForeignKey(Compra,default='',related_name='compra_detalles', on_delete=models.PROTECT)		
 	material       = models.ForeignKey(CatalogoDetalle,to_field='cdu_catalogo',default='',related_name='compra_detalles_material',limit_choices_to={'catalogos': 5}, on_delete=models.PROTECT)
 	dsc_material   = models.CharField(max_length=100,default="",blank=True)
 	calibre        = models.DecimalField(max_digits=4, decimal_places=3,default=0.00)

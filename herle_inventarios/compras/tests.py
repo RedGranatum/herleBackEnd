@@ -166,14 +166,14 @@ class ComprasModelTest(TestCase):
 
 	def test_guardar_compras_con_detalles_desde_desde_la_ruta(self):
 		data = {
-			'invoice' :'KIJ773','proveedor' :'1',
-			'fec_solicitud' :'01/02/2016','fec_aduana' : '01/03/2016',
-			'fec_inventario' : '01/04/2016','fec_real'  : '01/05/2016',
-			'casa_cambio': 'banxico','precio_dolar' : '17.12',
-			'tipo_moneda' : '0040001','transporte' : 'por avion',
-			'bln_activa' : True,'descripcion' :'la compra llegara pronto',
-			'comentarios':'estamos esperando la llegada del producto',
-		 	'compra_detalles' : [
+			"invoice" :"KIJ773","proveedor" :"1",
+			"fec_solicitud" :"01/02/2016","fec_aduana" : "01/03/2016",
+			"fec_inventario" : "01/04/2016","fec_real"  : "01/05/2016",
+			"casa_cambio": "banxico","precio_dolar" : "17.12",
+			"tipo_moneda" : "0040001","transporte" : "por avion",
+			"bln_activa" : True,"descripcion" :"la compra llegara pronto",
+			"comentarios":"estamos esperando la llegada del producto",
+		 	"compra_detalles" : [
 		 		{"material":"0050001","dsc_material":"Material 222","calibre": "1.2","ancho": "3.7",
 				"largo": "12","peso_kg":"23.12","peso_lb":"0","num_rollo":"ACC22MR","precio":"123.65"}	
 		 	],

@@ -24,10 +24,10 @@ class CompraConDetalleSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Compra
-		fields = ( 'id','invoice','compra_detalles','proveedor','fec_solicitud','fec_aduana',
+		fields = ( 'id','invoice','proveedor','fec_solicitud','fec_aduana',
 				'fec_inventario','fec_real','casa_cambio','precio_dolar','tipo_moneda',
-				'transporte','bln_activa','descripcion','comentarios',)
-
+				'transporte','bln_activa','descripcion','comentarios','compra_detalles')
+		
 	def create(self, validated_data):
 		compra_detalles_datos = validated_data.pop('compra_detalles')
 		compra = Compra.objects.create(**validated_data)
