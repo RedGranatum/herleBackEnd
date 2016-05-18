@@ -1,0 +1,14 @@
+System check identified some issues:
+
+WARNINGS:
+?: (1_8.W001) The standalone TEMPLATE_* settings were deprecated in Django 1.8 and the TEMPLATES dictionary takes precedence. You must put the values of the following settings into your default TEMPLATES dict: TEMPLATE_DEBUG.
+
+System check identified 1 issue (0 silenced).
+[13/May/2016 06:11:40] "GET /catalogos/3/catalogo_detalles/ HTTP/1.1" 200 153
+[13/May/2016 06:11:40] "GET /catalogos/1/catalogo_detalles/ HTTP/1.1" 200 1352
+Performing system checks...
+
+May 13, 2016 - 06:11:30
+Django version 1.9.5, using settings 'herle_inventarios.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
