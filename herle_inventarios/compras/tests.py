@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.db import connection
+from datetime import datetime
 from rest_framework.test import APIClient
 from rest_framework import filters,generics,status
 from catalogos.models import Catalogo
@@ -40,8 +41,8 @@ class ComprasModelTest(TestCase):
 		self.assertEqual(compra_guardada.invoice,"AA1")
 
 	def test_serializer_compras(self):
-		data = {"invoice":"BB2","proveedor":1,"fec_solicitud":"2014-12-21","fec_aduana":"2014-11-22",
-				"fec_inventario":"2014-10-20","fec_real":"2014-12-19","casa_cambio":"bolsa de valores",
+		data = {"invoice":"BB2","proveedor":1,"fec_solicitud":"21/12/2014","fec_aduana":"22/11/2014",
+				"fec_inventario":"20/10/2014","fec_real":"19/12/2014","casa_cambio":"bolsa de valores",
 				"precio_dolar":17.12,"tipo_moneda":"0040000","transporte":"colectivo","bln_activa":True,
 				"descripcion":"la compra","comentarios":"llegara pronto"}
 	
@@ -64,8 +65,8 @@ class ComprasModelTest(TestCase):
 	def test_enviar_datos_desde_desde_la_ruta(self):
 		response = self.client.get('/compras/', format='json')
 		self.assertEqual(len(response.data),0)
-		data = {"invoice":"BB2","proveedor":1,"fec_solicitud":"2014-12-21","fec_aduana":"2014-11-22",
-				"fec_inventario":"2014-10-20","fec_real":"2014-12-19","casa_cambio":"bolsa de valores",
+		data = {"invoice":"BB2","proveedor":1,"fec_solicitud":"21/12/2014","fec_aduana":"22/11/2014",
+				"fec_inventario":"20/10/2014","fec_real":"19/12/2014","casa_cambio":"bolsa de valores",
 				"precio_dolar":17.12,"tipo_moneda":"0040000","transporte":"colectivo","bln_activa":True,
 				"descripcion":"la compra","comentarios":"llegara pronto"}
 	
@@ -73,7 +74,7 @@ class ComprasModelTest(TestCase):
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 		self.assertEqual(response.data["invoice"],"BB2")
 		self.assertEqual(response.data["precio_dolar"],'17.12')
-		self.assertEqual(response.data["fec_real"],"2014-12-19")
+		self.assertEqual(response.data["fec_real"],"19/12/2014")
 
 		response = self.client.get('/compras/', format='json')
 		self.assertEqual(len(response.data),1)
@@ -95,8 +96,8 @@ class ComprasModelTest(TestCase):
 		response = self.client.get('/compras/1/', format='json')
 		self.assertEqual(response.data['invoice'],'AA1')
 
-		data = {"invoice":"BB2","proveedor":1,"fec_solicitud":"2014-12-21","fec_aduana":"2014-11-22",
-				"fec_inventario":"2014-10-20","fec_real":"2014-12-19","casa_cambio":"bolsa de valores",
+		data = {"invoice":"BB2","proveedor":1,"fec_solicitud":"21/12/2014","fec_aduana":"22/11/2014",
+				"fec_inventario":"20/10/2014","fec_real":"19/12/2014","casa_cambio":"bolsa de valores",
 				"precio_dolar":17.12,"tipo_moneda":"0040000","transporte":"colectivo","bln_activa":True,
 				"descripcion":"la compra","comentarios":"llegara pronto"}
 	
@@ -118,15 +119,15 @@ class ComprasModelTest(TestCase):
 
 	def test_buscar_invoice(self):
 		self.cargar_compra()
-		data = {"invoice":"BB2","proveedor":1,"fec_solicitud":"2014-12-21","fec_aduana":"2014-11-22",
-				"fec_inventario":"2014-10-20","fec_real":"2014-12-19","casa_cambio":"bolsa de valores",
+		data = {"invoice":"BB2","proveedor":1,"fec_solicitud":"21/12/2014","fec_aduana":"22/11/2014",
+				"fec_inventario":"20/10/2014","fec_real":"19/12/2014","casa_cambio":"bolsa de valores",
 				"precio_dolar":17.12,"tipo_moneda":"0040000","transporte":"colectivo","bln_activa":True,
 				"descripcion":"la compra","comentarios":"llegara pronto"}
 
 		response = self.client.post('/compras/',data, format='json')
 
-		data = {"invoice":"BB3","proveedor":1,"fec_solicitud":"2014-12-21","fec_aduana":"2014-11-22",
-				"fec_inventario":"2014-10-20","fec_real":"2014-12-19","casa_cambio":"bolsa de valores",
+		data = {"invoice":"BB3","proveedor":1,"fec_solicitud":"21/12/2014","fec_aduana":"22/11/2014",
+				"fec_inventario":"20/10/2014","fec_real":"19/12/2014","casa_cambio":"bolsa de valores",
 				"precio_dolar":17.12,"tipo_moneda":"0040000","transporte":"colectivo","bln_activa":True,
 				"descripcion":"la compra","comentarios":"llegara pronto"}
 
@@ -142,7 +143,9 @@ class ComprasModelTest(TestCase):
 		self.compra1 = Compra()
 		self.compra1.invoice ="AA1"
 		self.compra1.proveedor = self.proveedor1
-		self.compra1.fec_solicitud = '2015-12-12'
+		vfec_sol = datetime.strptime("13/12/2015", '%d/%m/%Y').strftime('%Y-%m-%d') 	
+		self.compra1.fec_solicitud =vfec_sol
+
 		self.compra1.fec_aduana = '2015-12-12'
 		self.compra1.fec_inventario = '2015-12-12'
 		self.compra1.fec_real  = '2015-12-12'
