@@ -166,7 +166,7 @@ class ComprasModelTest(TestCase):
 
 	def test_guardar_compras_con_detalles_desde_desde_la_ruta(self):
 		data = {
-			"invoice" :"KIJ773","proveedor" :"1",
+			"invoice" :"KIJ773","proveedor":"1",
 			"fec_solicitud" :"01/02/2016","fec_aduana" : "01/03/2016",
 			"fec_inventario" : "01/04/2016","fec_real"  : "01/05/2016",
 			"casa_cambio": "banxico","precio_dolar" : "17.12",

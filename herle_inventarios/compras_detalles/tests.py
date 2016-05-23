@@ -1,5 +1,7 @@
-from django.test import TestCase
+from rest_framework.test import APIClient
 from django.db import connection
+from django.test import TestCase
+from rest_framework import status
 from compras_detalles.models import CompraDetalle
 from catalogos.models import Catalogo
 from catalogo_detalles.models import CatalogoDetalle
@@ -8,16 +10,17 @@ from compras_detalles.serializers import CompraDetalleSerializer
 
 class ComprasDetalleModelTest(TestCase):
 	def setUp(self):
+		self.client = APIClient()
 		cursor = connection.cursor()
 		cursor.execute("ALTER SEQUENCE catalogos_catalogo_id_seq RESTART WITH 1;")
-		
+		cursor.execute("ALTER SEQUENCE compras_compra_id_seq RESTART WITH 1;")
+		cursor.execute("ALTER SEQUENCE compras_detalles_compradetalle_id_seq RESTART WITH 1;")
+	
 		self.cargar_catalogos()
 		self.cargar_catalogos_detalles()
 		self.cargar_compra()
 		
 	def test_serializer_compras_detalle(self):
-
-
 		data = {"compra":"1","material":"0050001","dsc_material":"Material 2","calibre": "1.2","ancho": "3.7",
 				"largo": "12","peso_kg":"23.12","peso_lb":"0","num_rollo":"ACC22MR","precio":"123.65"}
 	
@@ -26,6 +29,32 @@ class ComprasDetalleModelTest(TestCase):
 		serializer.save()
 		exiten = CompraDetalle.objects.all()
 		self.assertEqual(exiten.count(),1)
+
+	def test_modificar_detalle_compra(self):
+		self.carga_detalles_compra()
+
+		response = self.client.get('/compras_detalles/1/', format='json')
+		self.assertEqual(response.data['dsc_material'],'Material 2')
+
+		data = {"compra":"1","material":"0050001","dsc_material":"Material 3","calibre": "1.2","ancho": "3.7",
+				"largo": "12","peso_kg":"23.12","peso_lb":"30.2","num_rollo":"ACC22MR","precio":"123.65"}
+
+		request =self.client.put('/compras_detalles/1/', data , format='json')
+		response = self.client.get('/compras_detalles/1/', format='json')
+		self.assertEqual(response.data['dsc_material'],'Material 3')
+
+	
+	def test_eliminar_detalle_compra(self):
+		self.carga_detalles_compra()
+
+		response = self.client.get('/compras_detalles/1/', format='json')
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+		self.client.delete('/compras_detalles/1/', format='json')
+		
+		response = self.client.get('/compras_detalles/1/', format='json')
+		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
 
 	def cargar_catalogos(self):
 		self.catalogoPaises = Catalogo()
@@ -76,5 +105,12 @@ class ComprasDetalleModelTest(TestCase):
 		self.compra1.comentarios ="estamos esperando la llegada del producto"
 		self.compra1.save()
 	
+	def carga_detalles_compra(self):
+		data = {"compra":"1","material":"0050001","dsc_material":"Material 2","calibre": "1.2","ancho": "3.7",
+				"largo": "12","peso_kg":"23.12","peso_lb":"30.2","num_rollo":"ACC22MR","precio":"123.65"}
+	
+		serializer = CompraDetalleSerializer(data=data)
+		self.assertTrue(serializer.is_valid())
+		serializer.save()
 
 		
