@@ -45,7 +45,7 @@ class CompraConDetalleNuevaSerializer(serializers.ModelSerializer):
 	fec_aduana =serializers.DateTimeField(format='%d/%m/%Y',input_formats=['%d/%m/%Y'])
 	fec_inventario =serializers.DateTimeField(format='%d/%m/%Y',input_formats=['%d/%m/%Y'])
 	fec_real =serializers.DateTimeField(format='%d/%m/%Y',input_formats=['%d/%m/%Y'])
-	compra_detalles = CompraDetalleRelacionSerializer(many=True)
+	compra_detalles = CompraDetalleSerializer(many=True)
 
 	class Meta:
 		model = Compra

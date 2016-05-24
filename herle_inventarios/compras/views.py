@@ -1,10 +1,12 @@
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from django.shortcuts import render
-from django.db.models import Q
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.shortcuts import render
+from django.db import IntegrityError
+from django.db.models import Q
 from compras.models import Compra
-from compras.serializers import CompraSerializer,CompraConDetalleSerializer
+from compras.serializers import CompraSerializer,CompraConDetalleSerializer,CompraConDetalleNuevaSerializer
 
 class CompraMixin(object):
 	queryset = Compra.objects.all()
@@ -22,8 +24,33 @@ class CompraConDetallesMixin(object):
 	#queryset =Compra.objects.select_related()
 	serializer_class = CompraConDetalleSerializer
 
-class CompraConDetallesLista(CompraConDetallesMixin,ListCreateAPIView):
-	pass
+class CompraConDetallesNuevaMixin(object):
+	queryset = Compra.objects.all()
+	#queryset =Compra.objects.select_related()
+	serializer_class = CompraConDetalleNuevaSerializer
+
+
+class CompraConDetallesLista(APIView):
+	def get(self, request, pk=None, format=None):
+		if(pk!=None):
+			print(pk)
+
+		queryset = Compra.objects.all()
+		serializer_class = CompraConDetalleNuevaSerializer(queryset,many=True)
+		return  Response(serializer_class.data)
+
+	def post(self, request, format=None):
+		serializer_class = CompraConDetalleNuevaSerializer(data=request.data)
+		serializer_class.is_valid()
+		#import ipdb;ipdb.set_trace()
+		if serializer_class.is_valid():
+			try:
+				response = serializer_class.save()
+				datos = CompraConDetalleSerializer(response)		
+				return Response(datos.data, status=status.HTTP_201_CREATED)
+			except IntegrityError as e:
+				return Response({"El numero de invoice ya existe"}, status=status.HTTP_403_FORBIDDEN)
+		return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # class CompraConDetallesLista(APIView):
 # 	def get(self, request, pk=None, format=None):
