@@ -96,22 +96,22 @@ WSGI_APPLICATION = 'herle_inventarios.wsgi.application'
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
 
-# DATABASES = {
-#      'default': {
-#          'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#          'NAME': 'herlebd',                      
-#          'USER': 'raultr',
-#          'PASSWORD': 'rulo1000',
-#          'HOST': 'localhost'
-#      },
-#  }
-
 DATABASES = {
-   'default': {
-       'ENGINE': 'django.db.backends.sqlite3',
-       'NAME': 'herlebd',
-   }
-}
+     'default': {
+         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+         'NAME': 'herlebd',                      
+         'USER': 'raultr',
+         'PASSWORD': 'rulo1000',
+         'HOST': 'localhost'
+     },
+ }
+
+# DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': 'herlebd',
+#    }
+# }
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 
