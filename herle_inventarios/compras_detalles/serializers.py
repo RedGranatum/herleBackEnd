@@ -14,3 +14,10 @@ class CompraDetalleRelacionSerializer(serializers.ModelSerializer):
 			model = CompraDetalle
 			fields = ("id","compra","material","dsc_material","calibre","ancho",
 				"largo","peso_kg","peso_lb","num_rollo","precio")
+
+class CompraDetalleModificacionSerializer(serializers.ModelSerializer):	
+		id = serializers.IntegerField()	
+		class Meta:
+			model = CompraDetalle
+			fields = ("id","compra","material","dsc_material","calibre","ancho",
+				"largo","peso_kg","peso_lb","num_rollo","precio")
