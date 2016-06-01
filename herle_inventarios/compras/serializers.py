@@ -54,8 +54,6 @@ class CompraConDetalleNuevaSerializer(serializers.ModelSerializer):
 				'transporte','bln_activa','descripcion','comentarios','compra_detalles')
 
 	def create(self, validated_data):
-		#import ipdb;ipdb.set_trace()
-		#validated_data['proveedor_id']=1
 		compra_detalles_datos = validated_data.pop('compra_detalles')
 		compra = Compra.objects.create(**validated_data)
 		for detalle_datos in compra_detalles_datos:
@@ -82,7 +80,6 @@ class CompraConDetalleModificacionSerializer(serializers.ModelSerializer):
 			instance.save()
 			for detalle_datos in compra_detalles_datos:
 				if detalle_datos['id']==-1:
-					import ipdb;ipdb.set_trace()
 					if 'id' in detalle_datos: del detalle_datos['id']
 					CompraDetalle.objects.create(compra=instance, **detalle_datos)
 				else:
@@ -90,10 +87,12 @@ class CompraConDetalleModificacionSerializer(serializers.ModelSerializer):
 					detalle = CompraDetalle.objects.get(pk=pk)
 					detalle.material = detalle_datos["material"]
 					detalle.dsc_material = detalle_datos["dsc_material"]
+					detalle.calibre = detalle_datos["calibre"]
+					detalle.ancho = detalle_datos["ancho"]
+					detalle.largo = detalle_datos["largo"]
+					detalle.peso_kg = detalle_datos["peso_kg"]
+					detalle.peso_lb = detalle_datos["peso_lb"]
+					detalle.num_rollo = detalle_datos["num_rollo"]
+					detalle.precio = detalle_datos["precio"]
 					detalle.save()
-					#import ipdb;ipdb.set_trace()
-					#detalle_datos["material"]=detalle_datos["material"].cdu_catalogo
-					#serializer = CompraDetalleRelacionSerializer(detalle,data=detalle_datos)
-					#if serializer.is_valid():
-					#	serializer.save()
 			return instance
