@@ -16,3 +16,6 @@ class Proveedor(models.Model):
 	telefono = models.CharField(max_length=50, blank=True, default='')
 	email   = models.EmailField(max_length=50,blank=True, default='')
 	comentarios = models.CharField(max_length=200,blank=True,default='') 
+
+	def __str__(self):
+		return self.codigo

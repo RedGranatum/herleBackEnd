@@ -15,3 +15,6 @@ class Cliente(models.Model):
 	email   = models.EmailField(max_length=50,blank=True, default='')
 	banco  = models.ForeignKey(CatalogoDetalle,to_field='cdu_catalogo',default='',related_name='cliente_banco',limit_choices_to={'catalogos': 3}, on_delete=models.PROTECT)						
 	comentarios = models.CharField(max_length=200,blank=True,default='') 
+
+	def __str__(self):
+		return self.codigo

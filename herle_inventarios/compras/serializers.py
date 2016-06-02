@@ -75,7 +75,23 @@ class CompraConDetalleModificacionSerializer(serializers.ModelSerializer):
 
 	def update(self, instance, validated_data):
 			instance.invoice = validated_data.get('invoice', instance.invoice)
+			instance.proveedor = validated_data.get('proveedor', instance.proveedor)
+			
 			instance.transporte = validated_data.get('transporte', instance.transporte)
+			instance.fec_solicitud = validated_data.get('fec_solicitud', instance.fec_solicitud)
+			instance.fec_aduana = validated_data.get('fec_aduana', instance.fec_aduana)
+			instance.fec_inventario = validated_data.get('fec_inventario', instance.fec_inventario)
+			instance.fec_real = validated_data.get('fec_real', instance.fec_real)
+
+			instance.casa_cambio = validated_data.get('casa_cambio', instance.casa_cambio)
+			instance.precio_dolar = validated_data.get('precio_dolar', instance.precio_dolar)
+			instance.tipo_moneda = validated_data.get('tipo_moneda', instance.tipo_moneda)
+			
+			instance.bln_activa = validated_data.get('bln_activa', instance.bln_activa)
+			instance.descripcion = validated_data.get('descripcion', instance.descripcion)
+			instance.comentarios = validated_data.get('comentarios', instance.comentarios)
+			
+			
 			compra_detalles_datos = validated_data.pop('compra_detalles')
 			instance.save()
 			for detalle_datos in compra_detalles_datos:
@@ -85,6 +101,7 @@ class CompraConDetalleModificacionSerializer(serializers.ModelSerializer):
 				else:
 					pk = detalle_datos['id']
 					detalle = CompraDetalle.objects.get(pk=pk)
+
 					detalle.material = detalle_datos["material"]
 					detalle.dsc_material = detalle_datos["dsc_material"]
 					detalle.calibre = detalle_datos["calibre"]
