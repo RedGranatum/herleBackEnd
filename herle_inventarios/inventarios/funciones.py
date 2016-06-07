@@ -5,6 +5,7 @@ class CalculoCodigo(object):
 
 	ancho 	= ""
 	calibre = ""
+	cdu_material = ""
 
 	def codigoCalibre(self):
 		valor_calibre =Decimal(self.calibre)
@@ -19,3 +20,9 @@ class CalculoCodigo(object):
 		if len(cancho)==0:
 			return ''
 		return cancho.first().descripcion1
+
+	def codigoMaterial(self):
+		cmaterial = CatalogoDetalle.objects.filter(catalogos=5,cdu_catalogo=self.cdu_material)
+		if len(cmaterial)==0:
+			return ''
+		return cmaterial.first().descripcion2

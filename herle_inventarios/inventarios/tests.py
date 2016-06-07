@@ -30,6 +30,12 @@ class ComprasModelTest(TestCase):
 		self.probarAnchos('39','3.5')
 		self.probarAnchos('46.6','')
 
+	def test_calcular_codigo_material(self):
+		self.probarMateriales('0050001','P')
+		self.probarMateriales('0050004','R')
+		self.probarMateriales('0050000','')
+		self.probarMateriales('0040001','')
+
 	def probarCalibres(self, calibre, codigo_esperado):
 		calculoCodigos = CalculoCodigo()
 		calculoCodigos.calibre = calibre
@@ -42,6 +48,11 @@ class ComprasModelTest(TestCase):
 		cancho = calculoCodigos.codigoAncho()
 		self.assertEqual(cancho,codigo_esperado)
 
+	def probarMateriales(self, cdu_material, codigo_esperado):
+		calculoCodigos = CalculoCodigo()
+		calculoCodigos.cdu_material = cdu_material
+		cmaterial = calculoCodigos.codigoMaterial()
+		self.assertEqual(cmaterial,codigo_esperado)
 
 	def cargar_catalogos(self):
 		self.catalogoPaises = self.crearCatalogo("Paises")
@@ -61,6 +72,14 @@ class ComprasModelTest(TestCase):
 		self.crearCatalogoAnchos("3","35","38.5")
 		self.crearCatalogoAnchos("3.5","39","46.5")
 
+		self.crearCatalogoMateriales("NO ESPECIFICADO","")
+		self.crearCatalogoMateriales("PINTADO","P")
+		self.crearCatalogoMateriales("GALVANIZADO","G")
+		self.crearCatalogoMateriales("ZINTROALUM","Z")
+		self.crearCatalogoMateriales("RAINBOW","R")
+		
+	
+
 
 	def crearCatalogo(self,nombre_catalogo):
 		catalogo = Catalogo()
@@ -69,17 +88,19 @@ class ComprasModelTest(TestCase):
 		return catalogo
 
 	def crearCatalogoCalibres(self,desc1,monto1,monto2):
-		detCat = CatalogoDetalle()
-		detCat.catalogos = self.catalogoCalibre
-		detCat.descripcion1 =desc1
-		detCat.monto1 =monto1
-		detCat.monto2 =monto2
-		detCat.save()
+		self.crearCatalogoDetalle(self.catalogoCalibre,desc1,'',monto1,monto2)
 
 	def crearCatalogoAnchos(self,desc1,monto1,monto2):
+		self.crearCatalogoDetalle(self.catalogoAncho,desc1,'',monto1,monto2)
+
+	def crearCatalogoMateriales(self,desc1,desc2):
+		self.crearCatalogoDetalle(self.catalogoMaterial,desc1,desc2,0.0,0.0)
+
+	def crearCatalogoDetalle(self,tipo,desc1,desc2,monto1,monto2):
 		detCat = CatalogoDetalle()
-		detCat.catalogos = self.catalogoAncho
+		detCat.catalogos = tipo
 		detCat.descripcion1 =desc1
+		detCat.descripcion2 =desc2	
 		detCat.monto1 =monto1
 		detCat.monto2 =monto2
 		detCat.save()
