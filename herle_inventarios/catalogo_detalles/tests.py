@@ -150,3 +150,5 @@ class CatalogoDetalleModelTest(TestCase):
 		catalogo_det3.catalogos = self.catalogo2
 		catalogo_det3.descripcion1 ="otro catalogo"
 		catalogo_det3.save()	
+
+	
