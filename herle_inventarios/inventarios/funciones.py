@@ -34,3 +34,16 @@ class CalculoCodigo(object):
 		if len(clargo)==0:
 			return ''
 		return clargo.first().descripcion1
+
+	def generarCodigoProducto(self):
+		salida1 = self.codigoCalibre()
+		salida2 = self.codigoMaterial()
+		salida3 = self.codigoAncho()
+		salida4 = self.codigoLargo()
+		if(salida4 != ''):
+			return salida4
+
+		if(salida1=='' or salida2=='' or salida3==''):
+			return ''
+		codigo = salida1 + salida2 + salida3
+		return codigo

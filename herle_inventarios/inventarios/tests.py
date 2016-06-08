@@ -14,6 +14,8 @@ class ComprasModelTest(TestCase):
 		
 		self.cargar_catalogos()
 		self.cargar_catalogos_detalles()
+		self.calculoCodigos = CalculoCodigo()
+
 
 	def test_calcular_codigo_rango(self):
 		self.probarCalibres('0.007','') 
@@ -40,29 +42,60 @@ class ComprasModelTest(TestCase):
 		self.probarLargo('10','PAQUETERIA10')
 		self.probarLargo('12','PAQUETERIA12')
 
+	def test_calcularCodigoRangoMaterialAncho(self):
+		self.probarCodigoCalculo('0.008','0050001','35','0','C32P3')
+		self.probarCodigoCalculo('0.012','0050004','39','1','C30R3.5')		
+
+	def test_calcularCodigoRangoMaterialAncho_ConUnValorMal(self):
+		self.probarCodigoCalculo('0.007','0050001','35','0','')
+		self.probarCodigoCalculo('0.008','0040001','35','0','')
+		self.probarCodigoCalculo('0.008','0050001','30','0','')
+
+	def test_calcularCodigoRangoMaterialAnchoLargo(self):
+		self.probarCodigoCalculo('0.008','0050001','35','10','PAQUETERIA10')
+		self.probarCodigoCalculo('0.008','0040001','35','12','PAQUETERIA12')
+
+	def test_obtener_codigo_producto_por_url(self):
+		response = self.client.get('/inventarios/codigo_producto/?rango=0.008&cdu_material=0050001&ancho=35&largo=0', format='json')
+		self.assertEqual(response.data,'C32P3')
+
+		response = self.client.get('/inventarios/codigo_producto/?rango=0.012&cdu_material=0050004&ancho=39&largo=0', format='json')
+		self.assertEqual(response.data,'C30R3.5')
+		
+		response = self.client.get('/inventarios/codigo_producto/?rango=0.008&cdu_material=0040001&ancho=35&largo=0', format='json')
+		self.assertEqual(response.data,'')
+
+		response = self.client.get('/inventarios/codigo_producto/?rango=0.008&cdu_material=0040001&ancho=35&largo=12', format='json')
+		self.assertEqual(response.data,'PAQUETERIA12')
+
+
 	def probarCalibres(self, calibre, codigo_esperado):
-		calculoCodigos = CalculoCodigo()
-		calculoCodigos.calibre = calibre
-		ccalibre = calculoCodigos.codigoCalibre()
+		self.calculoCodigos.calibre = calibre
+		ccalibre = self.calculoCodigos.codigoCalibre()
 		self.assertEqual(ccalibre,codigo_esperado)
 
 	def probarAnchos(self, ancho, codigo_esperado):
-		calculoCodigos = CalculoCodigo()
-		calculoCodigos.ancho = ancho
-		cancho = calculoCodigos.codigoAncho()
+		self.calculoCodigos.ancho = ancho
+		cancho = self.calculoCodigos.codigoAncho()
 		self.assertEqual(cancho,codigo_esperado)
 
 	def probarMateriales(self, cdu_material, codigo_esperado):
-		calculoCodigos = CalculoCodigo()
-		calculoCodigos.cdu_material = cdu_material
-		cmaterial = calculoCodigos.codigoMaterial()
+		self.calculoCodigos.cdu_material = cdu_material
+		cmaterial = self.calculoCodigos.codigoMaterial()
 		self.assertEqual(cmaterial,codigo_esperado)
 
 	def probarLargo(self, largo, codigo_esperado):
-		calculoCodigos = CalculoCodigo()
-		calculoCodigos.largo = largo
-		clargo = calculoCodigos.codigoLargo()
+		self.calculoCodigos.largo = largo
+		clargo = self.calculoCodigos.codigoLargo()
 		self.assertEqual(clargo,codigo_esperado)
+
+	def probarCodigoCalculo(self,calibre,cdu_material,ancho,largo,codigo_esperado):
+		self.calculoCodigos.calibre = calibre
+		self.calculoCodigos.cdu_material = cdu_material
+		self.calculoCodigos.ancho = ancho
+		self.calculoCodigos.largo = largo
+		codigo = self.calculoCodigos.generarCodigoProducto()
+		self.assertEqual(codigo,codigo_esperado)
 
 	def cargar_catalogos(self):
 		self.catalogoPaises = self.crearCatalogo("Paises")
