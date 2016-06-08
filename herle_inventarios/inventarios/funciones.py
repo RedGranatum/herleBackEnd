@@ -55,6 +55,7 @@ class CalculoPrecios(object):
 	factor = 0.0 
 	precio_dolar = 0.0
 	factor_impuesto = 0.0
+	porc_comercializadora = 0
 
 	def kiloEnDolar(self):
 		valor = Decimal(self.precio_libra_centavos) * Decimal(self.factor)
@@ -64,5 +65,14 @@ class CalculoPrecios(object):
 	def kiloEnPeso(self):
 		kilo_dolar = self.kiloEnDolar()
 		valor = Decimal(kilo_dolar) * Decimal(self.precio_dolar)
+		valor = round(valor,4)
+		return str(valor)
+
+	def kiloEnPesosFinal(self):
+		valor = Decimal(self.kiloEnDolar()) * Decimal(self.kiloEnPeso())
+		if(self.con_comercializadora==True):
+			valor = valor * (Decimal(self.porc_comercializadora)/100)
+		
+		valor = valor + Decimal(self.factor_impuesto)
 		valor = round(valor,4)
 		return str(valor)
