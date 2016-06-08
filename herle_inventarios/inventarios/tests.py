@@ -69,27 +69,57 @@ class InventariosCodigoTest(TestCase):
 		self.assertEqual(response.data,'PAQUETERIA12')
 
 	def test_calculo_estados_unidos_sin_comercializadora(self):
-		dicValores = {'cdu_pais':'0010000','con_comercializadora':False,'precio_libra_centavos':'0.27',
+		dicValores = {'cdu_pais':'0010001','precio_tonelada_dolar':'0','factor_impuesto_china':'0','con_comercializadora':False,'precio_libra_centavos':'0.27',
 					'factor':'2.2045', 'precio_dolar':'18.03', 'factor_impuesto':'2.13', 'porc_comercializadora':'4',
-					'esperado_kilo_en_dolar':'0.5952','esperado_kilo_en_pesos':'10.7315','esperado_kilo_en_pesos_final':'8.5174'}
+					'esperado_kilo_en_dolar':'0.5952','esperado_kilo_en_pesos':'10.7315','esperado_tonelada_en_dolar':'0.0','esperado_kilo_en_pesos_final':'8.5174'}
 		self.probarCalculos(dicValores)
 
-		dicValores = {'cdu_pais':'0010000','con_comercializadora':False,'precio_libra_centavos':'0.26',
+		dicValores = {'cdu_pais':'0010001','precio_tonelada_dolar':'58','factor_impuesto_china':'2','con_comercializadora':False,'precio_libra_centavos':'0.26',
 					'factor':'2.2045', 'precio_dolar':'17.03', 'factor_impuesto':'1.80', 'porc_comercializadora':'4',
-					'esperado_kilo_en_dolar':'0.5732','esperado_kilo_en_pesos':'9.7616','esperado_kilo_en_pesos_final':'7.3953'}
+					'esperado_kilo_en_dolar':'0.5732','esperado_kilo_en_pesos':'9.7616','esperado_tonelada_en_dolar':'0.0','esperado_kilo_en_pesos_final':'7.3953'}
 		self.probarCalculos(dicValores)
 
 
 	def test_calculo_estados_unidos_con_comercializadora(self):
-		dicValores = {'cdu_pais':'0010000','con_comercializadora':True,'precio_libra_centavos':'0.27',
+		dicValores = {'cdu_pais':'0010001','precio_tonelada_dolar':'58','factor_impuesto_china':'2','con_comercializadora':True,'precio_libra_centavos':'0.27',
 					'factor':'2.2045', 'precio_dolar':'18.03', 'factor_impuesto':'2.13', 'porc_comercializadora':'4',
-					'esperado_kilo_en_dolar':'0.5952','esperado_kilo_en_pesos':'10.7315','esperado_kilo_en_pesos_final': '2.3855'}
+					'esperado_kilo_en_dolar':'0.5952','esperado_kilo_en_pesos':'10.7315','esperado_tonelada_en_dolar':'0.0','esperado_kilo_en_pesos_final': '2.3855'}
 		self.probarCalculos(dicValores)
 
-		dicValores = {'cdu_pais':'0010000','con_comercializadora':True,'precio_libra_centavos':'0.26',
+		dicValores = {'cdu_pais':'0010001','precio_tonelada_dolar':'0','factor_impuesto_china':'0','con_comercializadora':True,'precio_libra_centavos':'0.26',
 					'factor':'2.2045', 'precio_dolar':'17.03', 'factor_impuesto':'1.80', 'porc_comercializadora':'3',
-					'esperado_kilo_en_dolar':'0.5732','esperado_kilo_en_pesos':'9.7616','esperado_kilo_en_pesos_final': '1.9679'}
+					'esperado_kilo_en_dolar':'0.5732','esperado_kilo_en_pesos':'9.7616','esperado_tonelada_en_dolar':'0.0','esperado_kilo_en_pesos_final': '1.9679'}
 		self.probarCalculos(dicValores)
+
+	def test_calculo_china(self):
+		dicValores = {'cdu_pais':'0010002','precio_tonelada_dolar':'580','factor_impuesto_china':'3.45','con_comercializadora':True,'precio_libra_centavos':'0.26',
+					 'factor':'2.2045','precio_dolar':'18.03','factor_impuesto':'2.13', 'porc_comercializadora':'4',
+					 'esperado_kilo_en_dolar':'0.0','esperado_kilo_en_pesos':'0.0','esperado_tonelada_en_dolar':'10457.4000','esperado_kilo_en_pesos_final': '10818.1803'}
+		self.probarCalculos(dicValores)
+
+		dicValores = {'cdu_pais':'0010002','precio_tonelada_dolar':'58','factor_impuesto_china':'2','con_comercializadora':False,'precio_libra_centavos':'0.0',
+					 'factor':'0.0','precio_dolar':'17.03','factor_impuesto':'0', 'porc_comercializadora':'0.0',
+					 'esperado_kilo_en_dolar':'0.0','esperado_kilo_en_pesos':'0.0','esperado_tonelada_en_dolar':'987.7400','esperado_kilo_en_pesos_final': '1007.4948'}
+		self.probarCalculos(dicValores)
+
+	def test_si_se_pasan_caracteres_a_valores_decimale_devolver_cero(self):
+		calculo = CalculoPrecios()
+		calculo.precio_libra_centavos ='A'
+		calculo.factor = 'B'
+		calculo.precio_dolar =''
+		calculo.factor_impuesto ='C02.1'
+		calculo.porc_comercializadora = '2.2.3'
+		calculo.precio_tonelada_dolar = '2.2.3'
+		calculo.factor_impuesto_china = '2.2.3'
+
+		self.assertEqual(calculo.precio_libra_centavos, '0.0')
+		self.assertEqual(calculo.factor, '0.0')
+		self.assertEqual(calculo.precio_dolar, '0.0')
+		self.assertEqual(calculo.factor_impuesto, '0.0')
+		self.assertEqual(calculo.porc_comercializadora, '0')
+		self.assertEqual(calculo.precio_tonelada_dolar, '0.0')
+		self.assertEqual(calculo.factor_impuesto_china, '0.0')
+
 
 	def probarCalculos(self,dict_valores):
 		#tel = {'jack': 4098, 'sape': 4139}
@@ -101,12 +131,18 @@ class InventariosCodigoTest(TestCase):
 		calculo.precio_dolar = dict_valores['precio_dolar']
 		calculo.factor_impuesto = dict_valores['factor_impuesto']
 		calculo.porc_comercializadora = dict_valores['porc_comercializadora']
+
+		calculo.precio_tonelada_dolar  = dict_valores['precio_tonelada_dolar']
+		calculo.factor_impuesto_china = dict_valores['factor_impuesto_china']
 		kilo_en_dolar = calculo.kiloEnDolar()
 		kilo_en_pesos = calculo.kiloEnPeso()
+		tonelada_en_dolar = calculo.ToneladaEnDolar()
 		kilo_en_pesos_final = calculo.kiloEnPesosFinal()
+
 		self.assertEqual(kilo_en_dolar,dict_valores['esperado_kilo_en_dolar'])
-		self.assertEqual(kilo_en_pesos,dict_valores['esperado_kilo_en_pesos'])	 	
-		self.assertEqual(kilo_en_pesos_final,dict_valores['esperado_kilo_en_pesos_final'])
+		self.assertEqual(kilo_en_pesos,dict_valores['esperado_kilo_en_pesos'])	
+		self.assertEqual(tonelada_en_dolar,dict_valores['esperado_tonelada_en_dolar']) 	
+		self.assertEqual(kilo_en_pesos_final,dict_valores['esperado_kilo_en_pesos_final'])	
 
 	def probarCalibres(self, calibre, codigo_esperado):
 		self.calculoCodigos.calibre = calibre
