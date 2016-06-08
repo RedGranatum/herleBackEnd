@@ -3,9 +3,9 @@ from rest_framework.test import APIClient
 from django.db import connection
 from catalogos.models import Catalogo
 from catalogo_detalles.models import CatalogoDetalle
-from inventarios.funciones import CalculoCodigo
+from inventarios.funciones import CalculoCodigo,CalculoPrecios
 
-class ComprasModelTest(TestCase):
+class InventariosCodigoTest(TestCase):
 	def setUp(self):
 		self.client = APIClient()
 		cursor = connection.cursor()
@@ -68,6 +68,30 @@ class ComprasModelTest(TestCase):
 		response = self.client.get('/inventarios/codigo_producto/?rango=0.008&cdu_material=0040001&ancho=35&largo=12', format='json')
 		self.assertEqual(response.data,'PAQUETERIA12')
 
+	def test_calculo_estados_unidos_con_comercializadora(self):
+	 	calculo = CalculoPrecios()
+	 	calculo.cdu_pais = '0010000'
+	 	calculo.con_comercializadora  = True
+	 	calculo.precio_libra_centavos ='0.27'
+	 	calculo.factor ='2.2045'
+	 	calculo.precio_dolar ='18.03'
+	 	calculo.factor_impuesto = '2.13'
+	 	kilo_en_dolar = calculo.kiloEnDolar()
+	 	kilo_en_pesos = calculo.kiloEnPeso()
+	 	self.assertEqual(kilo_en_dolar,'0.5952')
+	 	self.assertEqual(kilo_en_pesos,'10.7315')
+
+	 	calculo = CalculoPrecios()
+	 	calculo.cdu_pais = '0010000'
+	 	calculo.con_comercializadora  = True
+	 	calculo.precio_libra_centavos ='0.26'
+	 	calculo.factor ='2.2045'
+	 	calculo.precio_dolar ='17.03'
+	 	calculo.factor_impuesto = '2.13'
+	 	kilo_en_dolar = calculo.kiloEnDolar()
+	 	kilo_en_pesos = calculo.kiloEnPeso()
+	 	self.assertEqual(kilo_en_dolar,'0.5732')
+	 	self.assertEqual(kilo_en_pesos,'9.7616')
 
 	def probarCalibres(self, calibre, codigo_esperado):
 		self.calculoCodigos.calibre = calibre
@@ -109,6 +133,11 @@ class ComprasModelTest(TestCase):
 		self.catalogoParametros = self.crearCatalogo("Parametros Calculos")
 
 	def cargar_catalogos_detalles(self):
+		self.crearCatalogoPaises("Mexico")
+		self.crearCatalogoPaises("China")
+		self.crearCatalogoPaises("EEUU")
+
+
 		self.crearCatalogoCalibres("C32","0.008","0.01")
 		self.crearCatalogoCalibres("C30","0.011","0.013")
 
@@ -123,6 +152,8 @@ class ComprasModelTest(TestCase):
 
 		self.crearCatalogoLargos("PAQUETERIA10","10","10")
 		self.crearCatalogoLargos("PAQUETERIA12","12","12")
+
+
 
 	def crearCatalogo(self,nombre_catalogo):
 		catalogo = Catalogo()
@@ -141,6 +172,10 @@ class ComprasModelTest(TestCase):
 
 	def crearCatalogoLargos(self,desc1,monto1,monto2):
 		self.crearCatalogoDetalle(self.catalogoLargo,desc1,'',monto1,monto2)
+
+	def crearCatalogoPaises(self,desc1):
+		self.crearCatalogoDetalle(self.catalogoPaises,desc1,'',0.0,0.0)
+
 
 	def crearCatalogoDetalle(self,tipo,desc1,desc2,monto1,monto2):
 		detCat = CatalogoDetalle()

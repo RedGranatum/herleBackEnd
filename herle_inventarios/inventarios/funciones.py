@@ -47,3 +47,22 @@ class CalculoCodigo(object):
 			return ''
 		codigo = salida1 + salida2 + salida3
 		return codigo
+
+class CalculoPrecios(object):
+	cdu_pais = ""
+	con_comercializadora = False
+	precio_libra_centavos = 0.0
+	factor = 0.0 
+	precio_dolar = 0.0
+	factor_impuesto = 0.0
+
+	def kiloEnDolar(self):
+		valor = Decimal(self.precio_libra_centavos) * Decimal(self.factor)
+		valor = round(valor,4)
+		return str(valor)
+
+	def kiloEnPeso(self):
+		kilo_dolar = self.kiloEnDolar()
+		valor = Decimal(kilo_dolar) * Decimal(self.precio_dolar)
+		valor = round(valor,4)
+		return str(valor)
