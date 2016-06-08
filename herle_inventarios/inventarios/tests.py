@@ -69,52 +69,44 @@ class InventariosCodigoTest(TestCase):
 		self.assertEqual(response.data,'PAQUETERIA12')
 
 	def test_calculo_estados_unidos_sin_comercializadora(self):
-	 	calculo = CalculoPrecios()
-	 	calculo.cdu_pais = '0010000'
-	 	calculo.con_comercializadora  = False
-	 	calculo.precio_libra_centavos ='0.27'
-	 	calculo.factor ='2.2045'
-	 	calculo.precio_dolar ='18.03'
-	 	calculo.factor_impuesto = '2.13'
-	 	kilo_en_dolar = calculo.kiloEnDolar()
-	 	kilo_en_pesos = calculo.kiloEnPeso()
-	 	kilo_en_pesos_final = calculo.kiloEnPesosFinal()
-	 	self.assertEqual(kilo_en_dolar,'0.5952')
-	 	self.assertEqual(kilo_en_pesos,'10.7315')
-	 	self.assertEqual(kilo_en_pesos_final,'8.5174')
+		dicValores = {'cdu_pais':'0010000','con_comercializadora':False,'precio_libra_centavos':'0.27',
+					'factor':'2.2045', 'precio_dolar':'18.03', 'factor_impuesto':'2.13', 'porc_comercializadora':'4',
+					'esperado_kilo_en_dolar':'0.5952','esperado_kilo_en_pesos':'10.7315','esperado_kilo_en_pesos_final':'8.5174'}
+		self.probarCalculos(dicValores)
 
+		dicValores = {'cdu_pais':'0010000','con_comercializadora':False,'precio_libra_centavos':'0.26',
+					'factor':'2.2045', 'precio_dolar':'17.03', 'factor_impuesto':'1.80', 'porc_comercializadora':'4',
+					'esperado_kilo_en_dolar':'0.5732','esperado_kilo_en_pesos':'9.7616','esperado_kilo_en_pesos_final':'7.3953'}
+		self.probarCalculos(dicValores)
 
-	 	calculo = CalculoPrecios()
-	 	calculo.cdu_pais = '0010000'
-	 	calculo.con_comercializadora  = False
-	 	calculo.precio_libra_centavos ='0.26'
-	 	calculo.factor ='2.2045'
-	 	calculo.precio_dolar ='17.03'
-	 	calculo.factor_impuesto = '1.80'
-	 	kilo_en_dolar = calculo.kiloEnDolar()
-	 	kilo_en_pesos = calculo.kiloEnPeso()
-	 	kilo_en_pesos_final = calculo.kiloEnPesosFinal()
-	 	self.assertEqual(kilo_en_dolar,'0.5732')
-	 	self.assertEqual(kilo_en_pesos,'9.7616')	 	
-	 	self.assertEqual(kilo_en_pesos_final,'7.3953')
 
 	def test_calculo_estados_unidos_con_comercializadora(self):
-	 	calculo = CalculoPrecios()
-	 	calculo.cdu_pais = '0010000'
-	 	calculo.con_comercializadora  = True
-	 	calculo.precio_libra_centavos ='0.27'	 	
-	 	calculo.factor ='2.2045'
-	 	calculo.precio_dolar ='18.03'
-	 	calculo.factor_impuesto = '2.13'
-	 	calculo.porc_comercializadora = '4'
-	 	kilo_en_dolar = calculo.kiloEnDolar()
-	 	kilo_en_pesos = calculo.kiloEnPeso()
-	 	kilo_en_pesos_final = calculo.kiloEnPesosFinal()
-	 	self.assertEqual(kilo_en_dolar,'0.5952')
-	 	self.assertEqual(kilo_en_pesos,'10.7315')
-	 	# REVISAR SI ES CORRECTO QUE SEA MENOR EL PRECIO CON COMERCIALIZADORA
-	 	self.assertEqual(kilo_en_pesos_final,'2.3855')
+		dicValores = {'cdu_pais':'0010000','con_comercializadora':True,'precio_libra_centavos':'0.27',
+					'factor':'2.2045', 'precio_dolar':'18.03', 'factor_impuesto':'2.13', 'porc_comercializadora':'4',
+					'esperado_kilo_en_dolar':'0.5952','esperado_kilo_en_pesos':'10.7315','esperado_kilo_en_pesos_final': '2.3855'}
+		self.probarCalculos(dicValores)
 
+		dicValores = {'cdu_pais':'0010000','con_comercializadora':True,'precio_libra_centavos':'0.26',
+					'factor':'2.2045', 'precio_dolar':'17.03', 'factor_impuesto':'1.80', 'porc_comercializadora':'3',
+					'esperado_kilo_en_dolar':'0.5732','esperado_kilo_en_pesos':'9.7616','esperado_kilo_en_pesos_final': '1.9679'}
+		self.probarCalculos(dicValores)
+
+	def probarCalculos(self,dict_valores):
+		#tel = {'jack': 4098, 'sape': 4139}
+		calculo = CalculoPrecios()
+		calculo.cdu_pais = dict_valores['cdu_pais']
+		calculo.con_comercializadora  = dict_valores['con_comercializadora']
+		calculo.precio_libra_centavos = dict_valores['precio_libra_centavos']
+		calculo.factor = dict_valores['factor']
+		calculo.precio_dolar = dict_valores['precio_dolar']
+		calculo.factor_impuesto = dict_valores['factor_impuesto']
+		calculo.porc_comercializadora = dict_valores['porc_comercializadora']
+		kilo_en_dolar = calculo.kiloEnDolar()
+		kilo_en_pesos = calculo.kiloEnPeso()
+		kilo_en_pesos_final = calculo.kiloEnPesosFinal()
+		self.assertEqual(kilo_en_dolar,dict_valores['esperado_kilo_en_dolar'])
+		self.assertEqual(kilo_en_pesos,dict_valores['esperado_kilo_en_pesos'])	 	
+		self.assertEqual(kilo_en_pesos_final,dict_valores['esperado_kilo_en_pesos_final'])
 
 	def probarCalibres(self, calibre, codigo_esperado):
 		self.calculoCodigos.calibre = calibre
