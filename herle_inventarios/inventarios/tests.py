@@ -36,6 +36,10 @@ class ComprasModelTest(TestCase):
 		self.probarMateriales('0050000','')
 		self.probarMateriales('0040001','')
 
+	def test_calcular_codigo_largo(self):
+		self.probarLargo('10','PAQUETERIA10')
+		self.probarLargo('12','PAQUETERIA12')
+
 	def probarCalibres(self, calibre, codigo_esperado):
 		calculoCodigos = CalculoCodigo()
 		calculoCodigos.calibre = calibre
@@ -53,6 +57,12 @@ class ComprasModelTest(TestCase):
 		calculoCodigos.cdu_material = cdu_material
 		cmaterial = calculoCodigos.codigoMaterial()
 		self.assertEqual(cmaterial,codigo_esperado)
+
+	def probarLargo(self, largo, codigo_esperado):
+		calculoCodigos = CalculoCodigo()
+		calculoCodigos.largo = largo
+		clargo = calculoCodigos.codigoLargo()
+		self.assertEqual(clargo,codigo_esperado)
 
 	def cargar_catalogos(self):
 		self.catalogoPaises = self.crearCatalogo("Paises")
@@ -77,9 +87,9 @@ class ComprasModelTest(TestCase):
 		self.crearCatalogoMateriales("GALVANIZADO","G")
 		self.crearCatalogoMateriales("ZINTROALUM","Z")
 		self.crearCatalogoMateriales("RAINBOW","R")
-		
-	
 
+		self.crearCatalogoLargos("PAQUETERIA10","10","10")
+		self.crearCatalogoLargos("PAQUETERIA12","12","12")
 
 	def crearCatalogo(self,nombre_catalogo):
 		catalogo = Catalogo()
@@ -95,6 +105,9 @@ class ComprasModelTest(TestCase):
 
 	def crearCatalogoMateriales(self,desc1,desc2):
 		self.crearCatalogoDetalle(self.catalogoMaterial,desc1,desc2,0.0,0.0)
+
+	def crearCatalogoLargos(self,desc1,monto1,monto2):
+		self.crearCatalogoDetalle(self.catalogoLargo,desc1,'',monto1,monto2)
 
 	def crearCatalogoDetalle(self,tipo,desc1,desc2,monto1,monto2):
 		detCat = CatalogoDetalle()
