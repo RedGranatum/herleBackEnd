@@ -16,3 +16,6 @@ class Compra(models.Model):
 	bln_activa     = models.BooleanField(default=True)
 	descripcion    = models.CharField(max_length=100,default="",blank=True)
 	comentarios    = models.CharField(max_length=100,default="",blank=True)
+
+	def __str__(self):
+		return self.invoice

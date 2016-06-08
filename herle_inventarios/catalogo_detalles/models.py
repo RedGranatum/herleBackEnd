@@ -9,8 +9,8 @@ class CatalogoDetalle(models.Model):
 	num_dcatalogo= models.IntegerField(default=0,help_text="clave consecutiva del detalle del catalogo")
 	descripcion1  = models.CharField(max_length=100)
 	descripcion2 = models.CharField(max_length=100, blank=True)
-	monto1 = models.DecimalField(max_digits=18,decimal_places=2,default=Decimal('0.00'))
-	monto2 = models.DecimalField(max_digits=18,decimal_places=2,default=Decimal('0.00'))
+	monto1 = models.DecimalField(max_digits=18,decimal_places=4,default=Decimal('0.00'))
+	monto2 = models.DecimalField(max_digits=18,decimal_places=4,default=Decimal('0.00'))
 	cdu_default = models.CharField(max_length=7, blank=True)
 
 	def save(self, *args, **kwargs):
