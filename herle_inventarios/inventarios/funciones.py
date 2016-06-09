@@ -160,16 +160,18 @@ class CalculoPrecios(object):
 		return str(round(valor,4))
 
 	def kiloEnPesosFinal(self):
+		if(self.cdu_pais=="0010001"):
+			return 	self.kiloEnPesosEU()
 		if(self.cdu_pais=="0010002"):
 			return self.kiloEnPesosChina()
-		return 	self.kiloEnPesosEU()
-		
+		return '0.0'
+
 	def kiloEnPesosChina(self):
 		valor = Decimal(self.ToneladaEnDolar()) + (Decimal(self.ToneladaEnDolar()) / 100) * Decimal(self.factor_impuesto_china)
 		return str(round(valor,4))
 
 	def kiloEnPesosEU(self):
-		valor = Decimal(self.kiloEnDolar()) * Decimal(self.kiloEnPeso())
+		valor = Decimal(self.kiloEnPeso())
 		if(self.con_comercializadora==True):
 			valor = valor * (Decimal(self.porc_comercializadora)/100)
 		
