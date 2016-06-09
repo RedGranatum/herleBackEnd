@@ -1,9 +1,20 @@
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from inventarios.funciones import CalculoCodigo,CalculoPrecios
+from inventarios.serializers import InventarioSerializer
+from inventarios.models import Inventario
 # Create your views here.
+
+class InventarioMixin(object):
+	queryset = Inventario.objects.all()
+	serializer_class = InventarioSerializer
+
+class InventarioLista(InventarioMixin, ListCreateAPIView):
+	pass
+
 class CodigoProducto(APIView):
 	def get(self, request):
 		calibre 	 = request.GET['rango']

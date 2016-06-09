@@ -2,6 +2,7 @@ from django.db import models
 from proveedores.models import Proveedor
 from catalogo_detalles.models import CatalogoDetalle
 from compras_detalles.models import CompraDetalle
+from inventarios.funciones    import CalculoCodigo,CalculoPrecios
 
 class Inventario(models.Model):
 	compra_detalle 		 	= models.ForeignKey(CompraDetalle,default="",related_name='inventario_id_compra_detalle', on_delete=models.PROTECT)		
@@ -21,13 +22,43 @@ class Inventario(models.Model):
 	precio_dolar   		 	= models.DecimalField(max_digits=18, decimal_places=4,default=0.00)
 	factor_impuesto		 	= models.DecimalField(max_digits=18, decimal_places=4,default=0.00)
 	con_comercializadora 	= models.BooleanField(default=False)
+	porc_comercializadora	= models.DecimalField(max_digits=18, decimal_places=4,default=0.00)
+	precio_tonelada_dolar	= models.DecimalField(max_digits=18, decimal_places=4,default=0.00)
 	factor_kilos		 	= models.DecimalField(max_digits=18, decimal_places=4,default=0.00)
 	valor_kilo_dolar	 	= models.DecimalField(max_digits=18, decimal_places=4,default=0.00)
-	valor_tonelada_pesos	= models.DecimalField(max_digits=18, decimal_places=4,default=0.00)
-	valor_kilo_persos	 	= models.DecimalField(max_digits=18, decimal_places=4,default=0.00)
+	valor_tonelada_dolar	= models.DecimalField(max_digits=18, decimal_places=4,default=0.00)
+	valor_kilo_pesos	 	= models.DecimalField(max_digits=18, decimal_places=4,default=0.00)
 	valor_final_kilo_pesos	= models.DecimalField(max_digits=18, decimal_places=4,default=0.00)
 	descripcion   			= models.CharField(max_length=100,default="",blank=True)
 	comentarios    			= models.CharField(max_length=100,default="",blank=True)	
+
+	def save(self, *args, **kwargs):
+		calculoCodigos = CalculoCodigo()
+		calculoCodigos.calibre = self.calibre
+		calculoCodigos.cdu_material = self.material.cdu_catalogo
+		calculoCodigos.ancho = self.ancho
+		calculoCodigos.largo = self.largo
+		codigo = calculoCodigos.generarCodigoProducto()
+		self.codigo_producto = codigo
+
+
+		calculo = CalculoPrecios()		
+		calculo.cdu_pais = self.pais.cdu_catalogo
+		calculo.precio_tonelada_dolar  = self.precio_tonelada_dolar
+		calculo.factor_impuesto_china = self.factor_impuesto
+		calculo.con_comercializadora  = self.con_comercializadora
+		calculo.precio_libra_centavos = self.precio_libra
+		calculo.factor = self.factor
+		calculo.precio_dolar = self.precio_dolar
+		calculo.factor_impuesto = self.factor_impuesto
+		calculo.porc_comercializadora = self.porc_comercializadora
+
+		self.valor_kilo_dolar = calculo.kiloEnDolar()
+		self.valor_kilo_pesos = calculo.kiloEnPeso()
+		self.valor_tonelada_dolar = calculo.ToneladaEnDolar()
+		self.valor_final_kilo_pesos = calculo.kiloEnPesosFinal()
+
+		super(Inventario, self).save(*args, **kwargs)
 
 	def __str__(self):
 		return self.id + '[' + self.compra_detalle + ']'

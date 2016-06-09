@@ -57,6 +57,7 @@ class CalculoPrecios(object):
 		self.__factor_impuesto = '0.0'
 		self.__precio_tonelada_dolar ='0.0'
 		self.__factor_impuesto_china = '0.0'
+		self.__porc_comercializadora = '0'
 		self.__con_comercializadora = False
 
 	cdu_pais = ""
@@ -141,6 +142,7 @@ class CalculoPrecios(object):
 		return valor;
 
 	def asignarValorSiNoEsEntero(self,valor):
+		valor = str(valor)
 		if(valor.isdigit()==False):
 			return'0'
 		return valor;

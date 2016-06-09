@@ -16,9 +16,9 @@ class ComprasModelTest(TestCase):
 	def setUp(self):
 		self.client = APIClient()
 		cursor = connection.cursor()
-		cursor.execute("ALTER SEQUENCE catalogos_catalogo_id_seq RESTART WITH 1;")
-		cursor.execute("ALTER SEQUENCE proveedores_proveedor_id_seq RESTART WITH 1;")
-		cursor.execute("ALTER SEQUENCE compras_compra_id_seq RESTART WITH 1;")
+		#cursor.execute("ALTER SEQUENCE catalogos_catalogo_id_seq RESTART WITH 1;")
+		#cursor.execute("ALTER SEQUENCE proveedores_proveedor_id_seq RESTART WITH 1;")
+		#cursor.execute("ALTER SEQUENCE compras_compra_id_seq RESTART WITH 1;")
 		
 		self.cargar_catalogos()
 		self.cargar_catalogos_detalles()
@@ -89,9 +89,9 @@ class ComprasModelTest(TestCase):
 		self.assertEqual(response.data['invoice'],'AA1')
 
 	def test_obtener_proveedor_por_pk_que_no_existe(self):
-	 	self.cargar_compra()
-	 	response = self.client.get('/compras/10/', format='json')
-	 	self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+		self.cargar_compra()
+		response = self.client.get('/compras/10/', format='json')
+		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 	def test_modificar_invoice_compra(self):
 		self.cargar_compra()
@@ -164,6 +164,25 @@ class ComprasModelTest(TestCase):
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 		self.assertEqual(len(response.data),1)
 
+	def test_guardar_compras_con_detalles_desde_desde_la_ruta(self):
+			data = {
+			"invoice" :"KIJ77","proveedor":"1",
+			"fec_solicitud" :"01/02/2016","fec_aduana" : "01/03/2016",
+			"fec_inventario" : "01/04/2016","fec_real"  : "01/05/2016",
+			"casa_cambio": "banxico","precio_dolar" : "17.12",
+			"tipo_moneda" : "0040001","transporte" : "por avion",
+			"bln_activa" : True,"descripcion" :"la compra llegara pronto",
+			"comentarios":"estamos esperando la llegada del producto",
+			"compra_detalles" : [
+				{"material":"0050001","dsc_material":"Material 222","calibre": "1.2","ancho": "3.7",
+				"largo": "12","peso_kg":"23.12","peso_lb":"0","num_rollo":"ACC22MR","precio":"123.65"},
+				],
+			}
+			response = self.client.post('/compras_con_detalles/',data, format='json')
+			self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+			self.assertEqual(response.data["invoice"],"KIJ77")
+			self.assertEqual(response.data["compra_detalles"][0]['id'],1)
+	
 	# def test_guardar_compras_con_detalles_desde_desde_la_ruta(self):
 	# 	data = {
 	# 		"invoice" :"KIJ773","proveedor":"1",
@@ -178,6 +197,7 @@ class ComprasModelTest(TestCase):
 	# 			"largo": "12","peso_kg":"23.12","peso_lb":"0","num_rollo":"ACC22MR","precio":"123.65"}	
 	# 	 	],
 	# 	}
+	#compras_con_detalles/
 	# 	serializer = CompraConDetalleSerializer(data=data)
 	# 	serializer.is_valid()
 	# 	response = serializer.save()
