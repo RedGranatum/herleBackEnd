@@ -57,9 +57,21 @@ class CalculoPrecios(object):
 		self.__factor_impuesto = '0.0'
 		self.__precio_tonelada_dolar ='0.0'
 		self.__factor_impuesto_china = '0.0'
+		self.__con_comercializadora = False
 
 	cdu_pais = ""
-	con_comercializadora = False
+
+	@property
+	def con_comercializadora(self):		
+		return self.__con_comercializadora
+
+	@con_comercializadora.setter
+	def  con_comercializadora(self, con_comercializadora):	
+		if(type(con_comercializadora) is str):
+			con_comercializadora = con_comercializadora == 'True'
+	
+		self.__con_comercializadora = con_comercializadora 
+
 
 	@property
 	def precio_libra_centavos(self):		
@@ -167,7 +179,7 @@ class CalculoPrecios(object):
 		return '0.0'
 
 	def kiloEnPesosChina(self):
-		valor = Decimal(self.ToneladaEnDolar()) + (Decimal(self.ToneladaEnDolar()) / 100) * Decimal(self.factor_impuesto_china)
+		valor =  (Decimal(self.ToneladaEnDolar()) / 1000) + Decimal(self.factor_impuesto_china)
 		return str(round(valor,4))
 
 	def kiloEnPesosEU(self):

@@ -26,7 +26,7 @@ class CalculoDePrecios(APIView):
 	def get(self, request):
 		calculo = CalculoPrecios()
 		calculo.cdu_pais 			  	= request.GET['cdu_pais']
-		calculo.con_comercializadora  	= request.GET['con_comercializadora']
+		calculo.con_comercializadora  	= request.GET['con_comercializadora'] 
 		calculo.precio_libra_centavos 	= request.GET['precio_libra_centavos']
 		calculo.factor 				 	= request.GET['factor']
 		calculo.precio_dolar 			= request.GET['precio_dolar']

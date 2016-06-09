@@ -94,12 +94,12 @@ class InventariosCodigoTest(TestCase):
 	def test_calculo_china(self):
 		dicValores = {'cdu_pais':'0010002','precio_tonelada_dolar':'580','factor_impuesto_china':'3.45','con_comercializadora':True,'precio_libra_centavos':'0.26',
 					 'factor':'2.2045','precio_dolar':'18.03','factor_impuesto':'2.13', 'porc_comercializadora':'4',
-					 'esperado_kilo_en_dolar':'0.0','esperado_kilo_en_pesos':'0.0','esperado_tonelada_en_dolar':'10457.4000','esperado_kilo_en_pesos_final': '10818.1803'}
+					 'esperado_kilo_en_dolar':'0.0','esperado_kilo_en_pesos':'0.0','esperado_tonelada_en_dolar':'10457.4000','esperado_kilo_en_pesos_final': '13.9074'}
 		self.probarCalculos(dicValores)
 
 		dicValores = {'cdu_pais':'0010002','precio_tonelada_dolar':'58','factor_impuesto_china':'2','con_comercializadora':False,'precio_libra_centavos':'0.0',
 					 'factor':'0.0','precio_dolar':'17.03','factor_impuesto':'0', 'porc_comercializadora':'0.0',
-					 'esperado_kilo_en_dolar':'0.0','esperado_kilo_en_pesos':'0.0','esperado_tonelada_en_dolar':'987.7400','esperado_kilo_en_pesos_final': '1007.4948'}
+					 'esperado_kilo_en_dolar':'0.0','esperado_kilo_en_pesos':'0.0','esperado_tonelada_en_dolar':'987.7400','esperado_kilo_en_pesos_final': '2.9877'}
 		self.probarCalculos(dicValores)
 
 	def test_si_se_pasan_caracteres_a_valores_decimale_devolver_cero(self):
@@ -139,7 +139,7 @@ class InventariosCodigoTest(TestCase):
 		self.assertEqual( response.data['kilo_en_dolar'],'0.0')
 		self.assertEqual( response.data['kilo_en_pesos'],'0.0')
 		self.assertEqual( response.data['tonelada_en_dolar'],'987.7400')
-		self.assertEqual( response.data['kilo_en_pesos_final'],'1007.4948')	
+		self.assertEqual( response.data['kilo_en_pesos_final'],'2.9877')	
 
 		ruta =("/inventarios/calculo_precios/?cdu_pais=0010000&precio_tonelada_dolar=0"
 				"&factor_impuesto_china=0&con_comercializadora=False&precio_libra_centavos=0.27"
