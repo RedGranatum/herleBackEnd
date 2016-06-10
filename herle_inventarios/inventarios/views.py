@@ -1,5 +1,7 @@
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from django.shortcuts import render
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -12,8 +14,26 @@ class InventarioMixin(object):
 	queryset = Inventario.objects.all()
 	serializer_class = InventarioSerializer
 
-class InventarioLista(InventarioMixin, ListCreateAPIView):
-	pass
+class InventarioLista(APIView):
+	def get(self, request, pk=None, format=None):
+		if(pk!=None):
+			print(pk)
+		queryset = Inventario.objects.all()
+		serializer_class = InventarioSerializer(queryset,many=True)
+		return  Response(serializer_class.data)
+
+	def post(self, request, format=None):
+		serializer_class = InventarioSerializer(data=request.data)
+		serializer_class.is_valid()
+		if serializer_class.is_valid():
+			try:
+				serializer_class.save()
+				return Response(serializer_class.data, status=status.HTTP_201_CREATED)
+			except IntegrityError as ex:
+				return Response({"La clave ya existe"}, status=status.HTTP_403_FORBIDDEN)
+			except ValidationError as ex:
+				return Response({"Este detalle de compra ya habia sido validado"}, status=status.HTTP_403_FORBIDDEN)
+		return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CodigoProducto(APIView):
 	def get(self, request):

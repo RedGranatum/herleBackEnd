@@ -15,8 +15,10 @@ class InventariosCodigoTest(TestCase):
 	def setUp(self):
 		self.client = APIClient()
 		cursor = connection.cursor()
-		#cursor.execute("ALTER SEQUENCE catalogos_catalogo_id_seq RESTART WITH 1;")
-		#cursor.execute("ALTER SEQUENCE compras_detalles_compradetalle_id_seq RESTART WITH 1;")
+		cursor.execute("ALTER SEQUENCE catalogos_catalogo_id_seq RESTART WITH 1;")
+		cursor.execute("ALTER SEQUENCE proveedores_proveedor_id_seq RESTART WITH 1;")
+		cursor.execute("ALTER SEQUENCE compras_compra_id_seq RESTART WITH 1;")
+		cursor.execute("ALTER SEQUENCE compras_detalles_compradetalle_id_seq RESTART WITH 1;")
 		
 		self.cargar_catalogos()
 		self.cargar_catalogos_detalles()
@@ -199,8 +201,8 @@ class InventariosCodigoTest(TestCase):
 		response = self.client.get('/inventarios/', format='json')
 		self.assertEqual(len(response.data),0)
 
-		data = {"compra_detalle":"1","invoice_compra":"ASSS","material":"0050004","calibre":'0.008',
-				"ancho":'35',"largo":'1',"num_rollo":'A123',"peso_kg":'132.0',"peso_lb":'0.0',"transporte":'ESTAFETA',
+		data = {"compra_detalle":"1","invoice_compra":"ASSS","material":"0050004","calibre":"0.008",
+				"ancho":"35","largo":"1","num_rollo":"A123","peso_kg":"132.0","peso_lb":"0.0","transporte":"ESTAFETA",
 				"pais":"0010001","precio_libra":"0.27","factor":"2.2045","precio_dolar":"18.03",
 				"precio_tonelada_dolar":"58","factor_impuesto":"2.13","con_comercializadora":"True",
 				"porc_comercializadora":"4","descripcion":"Sin descripcion"	,"comentarios":"Todo esta listo"}
@@ -227,11 +229,14 @@ class InventariosCodigoTest(TestCase):
 		self.assertEqual(valor_final_kilo_pesos,'2.5593')	
 
 	def test_enviar_datos_inventario_desde_desde_la_ruta(self):
+		response = self.client.get('/compras_detalles/1/', format='json')
+		self.assertEqual(response.data['validado'],False)
+
 		response = self.client.get('/inventarios/', format='json')
 		self.assertEqual(len(response.data),0)
 
-		data = {"compra_detalle":"1","invoice_compra":"ASSS","material":"0050004","calibre":'0.008',
-				"ancho":'35',"largo":'1',"num_rollo":'A123',"peso_kg":'132.0',"peso_lb":'0.0',"transporte":'ESTAFETA',
+		data = {"compra_detalle":"1","invoice_compra":"ASSS","material":"0050004","calibre":"0.008",
+				"ancho":"35","largo":"1","num_rollo":"A123","peso_kg":"132.0","peso_lb":"0.0","transporte":"ESTAFETA",
 				"pais":"0010001","precio_libra":"0.27","factor":"2.2045","precio_dolar":"18.03",
 				"precio_tonelada_dolar":"58","factor_impuesto":"2.13","con_comercializadora":"True",
 				"porc_comercializadora":"4","descripcion":"Sin descripcion"	,"comentarios":"Todo esta listo"}
@@ -245,6 +250,19 @@ class InventariosCodigoTest(TestCase):
 		self.assertEqual(response.data["valor_tonelada_dolar"],"0.0000")
 		self.assertEqual(response.data["valor_final_kilo_pesos"],"2.5593")
 
+		response = self.client.get('/compras_detalles/1/', format='json')
+		self.assertEqual(response.data['validado'],True)
+
+		# Volver validar la misma compra
+		data = {"compra_detalle":"1","invoice_compra":"ASSS","material":"0050004","calibre":"0.008",
+				"ancho":"35","largo":"1","num_rollo":"A123","peso_kg":"132.0","peso_lb":"0.0","transporte":"ESTAFETA",
+				"pais":"0010001","precio_libra":"0.27","factor":"2.2045","precio_dolar":"18.03",
+				"precio_tonelada_dolar":"58","factor_impuesto":"2.13","con_comercializadora":"True",
+				"porc_comercializadora":"4","descripcion":"Sin descripcion"	,"comentarios":"Todo esta listo"}
+		
+		response = self.client.post('/inventarios/',data, format='json')
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+		self.assertEqual(response.data, {'Este detalle de compra ya habia sido validado'})
 
 	def probarCalculos(self,dict_valores):
 		calculo = CalculoPrecios()

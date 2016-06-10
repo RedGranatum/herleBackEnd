@@ -42,7 +42,6 @@ class CompraConDetallesLista(APIView):
 	def post(self, request, format=None):
 		serializer_class = CompraConDetalleNuevaSerializer(data=request.data)
 		serializer_class.is_valid()
-		#import ipdb;ipdb.set_trace()
 		if serializer_class.is_valid():
 			try:
 				response = serializer_class.save()

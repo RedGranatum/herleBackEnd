@@ -1,4 +1,6 @@
 from django.db import models
+from django.db import transaction
+from django.core.exceptions import ValidationError
 from proveedores.models import Proveedor
 from catalogo_detalles.models import CatalogoDetalle
 from compras_detalles.models import CompraDetalle
@@ -32,7 +34,9 @@ class Inventario(models.Model):
 	descripcion   			= models.CharField(max_length=100,default="",blank=True)
 	comentarios    			= models.CharField(max_length=100,default="",blank=True)	
 
+	@transaction.atomic
 	def save(self, *args, **kwargs):
+		self.validarDetalleCompra()
 		calculoCodigos = CalculoCodigo()
 		calculoCodigos.calibre = self.calibre
 		calculoCodigos.cdu_material = self.material.cdu_catalogo
@@ -57,8 +61,18 @@ class Inventario(models.Model):
 		self.valor_kilo_pesos = calculo.kiloEnPeso()
 		self.valor_tonelada_dolar = calculo.ToneladaEnDolar()
 		self.valor_final_kilo_pesos = calculo.kiloEnPesosFinal()
-
+		compdet_id = self.compra_detalle.id
+		compra = CompraDetalle.objects.get(id=compdet_id)
+		compra.validado=True
+		compra.save()
 		super(Inventario, self).save(*args, **kwargs)
 
+	def validarDetalleCompra(self):
+		# Si si el detalle de la compra no ha sido ya validado
+		cantidad =  CompraDetalle.objects.filter(id=self.compra_detalle.id,validado=True).count()
+		if(cantidad==1):
+			raise ValidationError('Este detalle de compra ya habia sido validado')
+		return True
+
 	def __str__(self):
-		return self.id + '[' + self.compra_detalle + ']'
+		return str(self.id)

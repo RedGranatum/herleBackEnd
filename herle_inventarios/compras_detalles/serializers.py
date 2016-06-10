@@ -6,18 +6,18 @@ class CompraDetalleSerializer(serializers.ModelSerializer):
 		class Meta:
 			model = CompraDetalle
 			fields = ("id","compra","material","dsc_material","calibre","ancho",
-				"largo","peso_kg","peso_lb","num_rollo","precio")
+				"largo","peso_kg","peso_lb","num_rollo","precio","validado")
 
 class CompraDetalleRelacionSerializer(serializers.ModelSerializer):		
 		material = CatalogoDetalleSerializer(read_only=False, required=False)
 		class Meta:
 			model = CompraDetalle
 			fields = ("id","compra","material","dsc_material","calibre","ancho",
-				"largo","peso_kg","peso_lb","num_rollo","precio")
+				"largo","peso_kg","peso_lb","num_rollo","precio","validado")
 
 class CompraDetalleModificacionSerializer(serializers.ModelSerializer):	
 		id = serializers.IntegerField()	
 		class Meta:
 			model = CompraDetalle
 			fields = ("id","compra","material","dsc_material","calibre","ancho",
-				"largo","peso_kg","peso_lb","num_rollo","precio")
+				"largo","peso_kg","peso_lb","num_rollo","precio","validado")
