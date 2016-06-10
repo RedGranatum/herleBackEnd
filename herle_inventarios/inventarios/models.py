@@ -1,9 +1,11 @@
 from django.db import models
 from django.db import transaction
+import datetime
 from django.core.exceptions import ValidationError
 from proveedores.models import Proveedor
 from catalogo_detalles.models import CatalogoDetalle
 from compras_detalles.models import CompraDetalle
+from compras.models import Compra
 from inventarios.funciones    import CalculoCodigo,CalculoPrecios
 
 class Inventario(models.Model):
@@ -62,9 +64,12 @@ class Inventario(models.Model):
 		self.valor_tonelada_dolar = calculo.ToneladaEnDolar()
 		self.valor_final_kilo_pesos = calculo.kiloEnPesosFinal()
 		compdet_id = self.compra_detalle.id
-		compra = CompraDetalle.objects.get(id=compdet_id)
-		compra.validado=True
-		compra.save()
+		compradet = CompraDetalle.objects.get(id=compdet_id)
+		compradet.validado=True
+		compradet.save()
+		fecha_actual = datetime.datetime.now()
+		Compra.objects.filter(id=compradet.compra_id).update(fec_inventario=fecha_actual,fec_real=fecha_actual)
+	
 		super(Inventario, self).save(*args, **kwargs)
 
 	def validarDetalleCompra(self):
