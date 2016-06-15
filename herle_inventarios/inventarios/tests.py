@@ -125,7 +125,7 @@ class InventariosCodigoTest(TestCase):
 		self.assertEqual(calculo.factor, '0.0')
 		self.assertEqual(calculo.precio_dolar, '0.0')
 		self.assertEqual(calculo.factor_impuesto, '0.0')
-		self.assertEqual(calculo.porc_comercializadora, '0')
+		self.assertEqual(calculo.porc_comercializadora, '0.0')
 		self.assertEqual(calculo.precio_tonelada_dolar, '0.0')
 		self.assertEqual(calculo.factor_impuesto_china, '0.0')
 
