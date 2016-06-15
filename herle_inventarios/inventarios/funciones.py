@@ -116,7 +116,7 @@ class CalculoPrecios(object):
 
 	@porc_comercializadora.setter
 	def  porc_comercializadora(self, porc_comercializadora):	
-		self.__porc_comercializadora = self.asignarValorSiNoEsEntero(porc_comercializadora)
+		self.__porc_comercializadora = self.asignarValorSiNoEsDecimal(porc_comercializadora)
 
 	@property
 	def precio_tonelada_dolar(self):
@@ -143,6 +143,8 @@ class CalculoPrecios(object):
 
 	def asignarValorSiNoEsEntero(self,valor):
 		valor = str(valor)
+		if(self.esDecimal(valor)==True):
+			return int(float(valor))
 		if(valor.isdigit()==False):
 			return'0'
 		return valor;

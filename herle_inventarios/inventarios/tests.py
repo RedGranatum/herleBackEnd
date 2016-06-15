@@ -96,7 +96,7 @@ class InventariosCodigoTest(TestCase):
 		self.probarCalculos(dicValores)
 
 		dicValores = {'cdu_pais':'0010001','precio_tonelada_dolar':'0','factor_impuesto_china':'0','con_comercializadora':True,'precio_libra_centavos':'0.26',
-					'factor':'2.2045', 'precio_dolar':'17.03', 'factor_impuesto':'1.80', 'porc_comercializadora':'3',
+					'factor':'2.2045', 'precio_dolar':'17.03', 'factor_impuesto':'1.80', 'porc_comercializadora':'3.0',
 					'esperado_kilo_en_dolar':'0.5732','esperado_kilo_en_pesos':'9.7616','esperado_tonelada_en_dolar':'0.0','esperado_kilo_en_pesos_final': '2.0928'}
 		self.probarCalculos(dicValores)
 
@@ -125,7 +125,7 @@ class InventariosCodigoTest(TestCase):
 		self.assertEqual(calculo.factor, '0.0')
 		self.assertEqual(calculo.precio_dolar, '0.0')
 		self.assertEqual(calculo.factor_impuesto, '0.0')
-		self.assertEqual(calculo.porc_comercializadora, '0')
+		self.assertEqual(calculo.porc_comercializadora, '0.0')
 		self.assertEqual(calculo.precio_tonelada_dolar, '0.0')
 		self.assertEqual(calculo.factor_impuesto_china, '0.0')
 
