@@ -143,6 +143,8 @@ class CalculoPrecios(object):
 
 	def asignarValorSiNoEsEntero(self,valor):
 		valor = str(valor)
+		if(self.esDecimal(valor)==True):
+			return int(float(valor))
 		if(valor.isdigit()==False):
 			return'0'
 		return valor;
