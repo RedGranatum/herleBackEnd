@@ -33,6 +33,7 @@ class InventarioLista(APIView):
 				return Response({"La clave ya existe"}, status=status.HTTP_403_FORBIDDEN)
 			except ValidationError as ex:
 				return Response({"Este detalle de compra ya habia sido validado"}, status=status.HTTP_403_FORBIDDEN)
+		import ipdb;ipdb.set_trace()
 		return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CodigoProducto(APIView):
