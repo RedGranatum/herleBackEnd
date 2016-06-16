@@ -2,6 +2,17 @@ from decimal import *
 from catalogo_detalles.models import CatalogoDetalle
 import inspect, itertools 
 
+class Conversor(object):
+	kilo_en_libra = 2.20462
+
+	def transformarKg_Lb(self, kg):
+		lb = kg * self.kilo_en_libra
+		return round(lb,5)
+
+	def transformarLb_Kg(self, lb):
+		return  round((lb / self.kilo_en_libra),4)
+
+
 class CalculoCodigo(object):
 
 	ancho 	= ""

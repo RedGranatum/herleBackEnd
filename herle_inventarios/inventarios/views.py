@@ -1,7 +1,7 @@
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from django.shortcuts import render
 from django.db import IntegrityError
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError,ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -24,7 +24,6 @@ class InventarioLista(APIView):
 
 	def post(self, request, format=None):
 		serializer_class = InventarioSerializer(data=request.data)
-		serializer_class.is_valid()
 		if serializer_class.is_valid():
 			try:
 				serializer_class.save()
@@ -33,7 +32,10 @@ class InventarioLista(APIView):
 				return Response({"La clave ya existe"}, status=status.HTTP_403_FORBIDDEN)
 			except ValidationError as ex:
 				return Response({"Este detalle de compra ya habia sido validado"}, status=status.HTTP_403_FORBIDDEN)
-		import ipdb;ipdb.set_trace()
+			except ObjectDoesNotExist as ex:
+				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)			
+			except Exception as ex:				
+				return Response({"Hay errores"}, status=status.HTTP_403_FORBIDDEN)
 		return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CodigoProducto(APIView):

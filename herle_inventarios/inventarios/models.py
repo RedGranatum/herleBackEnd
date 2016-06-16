@@ -16,7 +16,7 @@ class Inventario(models.Model):
 	ancho          		 	= models.DecimalField(max_digits=5, decimal_places=2,default=0.00)
 	largo          		 	= models.IntegerField(default=0)
 	codigo_producto		 	= models.CharField(max_length=30,default="")
-	num_rollo      		 	= models.CharField(max_length=30,default="",blank=True)
+	num_rollo      		 	= models.CharField(max_length=30,default="",blank=True,unique=True,error_messages={'unique':"El numero de rollo ya existe"})
 	peso_kg        		 	= models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
 	peso_lb        		 	= models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
 	transporte 	   		 	= models.CharField(max_length=50,default="",blank=True)

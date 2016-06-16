@@ -15,4 +15,4 @@ class CompraDetalle(models.Model):
 	precio         = models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
 	validado       = models.BooleanField(default=False)
 	def __str__(self):
-		return str(self.compra)
+		return str(self.id)

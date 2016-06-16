@@ -7,7 +7,7 @@ from catalogo_detalles.models import CatalogoDetalle
 from proveedores.models		  import Proveedor
 from compras.models 		  import Compra
 from compras_detalles.models  import CompraDetalle
-from inventarios.funciones    import CalculoCodigo,CalculoPrecios
+from inventarios.funciones    import CalculoCodigo,CalculoPrecios,Conversor
 from inventarios.models       import Inventario
 from inventarios.serializers  import InventarioSerializer
 
@@ -15,16 +15,33 @@ class InventariosCodigoTest(TestCase):
 	def setUp(self):
 		self.client = APIClient()
 		cursor = connection.cursor()
-		cursor.execute("ALTER SEQUENCE catalogos_catalogo_id_seq RESTART WITH 1;")
-		cursor.execute("ALTER SEQUENCE proveedores_proveedor_id_seq RESTART WITH 1;")
-		cursor.execute("ALTER SEQUENCE compras_compra_id_seq RESTART WITH 1;")
-		cursor.execute("ALTER SEQUENCE compras_detalles_compradetalle_id_seq RESTART WITH 1;")
+		#cursor.execute("ALTER SEQUENCE catalogos_catalogo_id_seq RESTART WITH 1;")
+		#cursor.execute("ALTER SEQUENCE proveedores_proveedor_id_seq RESTART WITH 1;")
+		#cursor.execute("ALTER SEQUENCE compras_compra_id_seq RESTART WITH 1;")
+		#cursor.execute("ALTER SEQUENCE compras_detalles_compradetalle_id_seq RESTART WITH 1;")
 		
 		self.cargar_catalogos()
 		self.cargar_catalogos_detalles()
 		self.calculoCodigos = CalculoCodigo()
 		self.cargar_proveedores()
 		self.cargarCompraConDetalle()
+
+	def test_transforma_kilo_a_libra(self):
+		conversor = Conversor();
+		lb = conversor.transformarKg_Lb(1)
+		self.assertEqual(lb, 2.20462)
+
+		lb = conversor.transformarKg_Lb(1.5)
+		self.assertEqual(lb, 3.30693)
+
+	def test_transforma_libra_a_kilo(self):
+		conversor = Conversor();
+		kg = conversor.transformarLb_Kg(2.20462)
+		self.assertEqual(kg, 1)
+
+		kg = conversor.transformarLb_Kg(3.30693)
+		self.assertEqual(kg,1.5 )
+
 
 	def test_calcular_codigo_rango(self):
 		self.probarCalibres('0.007','') 
@@ -255,7 +272,7 @@ class InventariosCodigoTest(TestCase):
 
 		# Volver validar la misma compra
 		data = {"compra_detalle":"1","invoice_compra":"ASSS","material":"0050004","calibre":"0.008",
-				"ancho":"35","largo":"1","num_rollo":"A123","peso_kg":"132.0","peso_lb":"0.0","transporte":"ESTAFETA",
+				"ancho":"35","largo":"1","num_rollo":"A1223","peso_kg":"132.0","peso_lb":"0.0","transporte":"ESTAFETA",
 				"pais":"0010001","precio_libra":"0.27","factor":"2.2045","precio_dolar":"18.03",
 				"precio_tonelada_dolar":"58","factor_impuesto":"2.13","con_comercializadora":"True",
 				"porc_comercializadora":"4","descripcion":"Sin descripcion"	,"comentarios":"Todo esta listo"}
@@ -271,8 +288,9 @@ class InventariosCodigoTest(TestCase):
 		"porc_comercializadora":"4","descripcion":"Sin descripcion"	,"comentarios":"Todo esta listo"}
 		
 		response = self.client.post('/inventarios/',data, format='json')
-		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-		self.assertEqual(response.data, {'Este detalle de compra ya habia sido validado'})
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)		
+		error = {'num_rollo': ['El numero de rollo ya existe'], 'pais': ['Este campo no puede ser nulo.']}
+		self.assertEqual(response.data, error)
 
 	def probarCalculos(self,dict_valores):
 		calculo = CalculoPrecios()
