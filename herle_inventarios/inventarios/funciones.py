@@ -3,15 +3,29 @@ from catalogo_detalles.models import CatalogoDetalle
 import inspect, itertools 
 
 class Conversor(object):
+	def __init__(self):
+		self.kilogramo =0.0
+		self.libra = 0.0
+		self.pais = "0010000"
+
 	kilo_en_libra = 2.20462
+	mexico = "0010000"
+	eu     = "0010001"
+	china  = "0010002"
 
 	def transformarKg_Lb(self, kg):
-		lb = kg * self.kilo_en_libra
-		return round(lb,5)
+		lb = float(kg) * self.kilo_en_libra
+		return round((lb),5)
 
 	def transformarLb_Kg(self, lb):
-		return  round((lb / self.kilo_en_libra),4)
+		calculo = ((float(lb) / self.kilo_en_libra))
+		return  round(calculo,5)
 
+	def transformarPorPais(self):
+		if(self.pais == self.mexico):
+			self.libra = self.transformarKg_Lb(self.kilogramo)
+		else:
+			self.kilogramo = self.transformarLb_Kg(self.libra)
 
 class CalculoCodigo(object):
 

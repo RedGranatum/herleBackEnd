@@ -42,6 +42,32 @@ class InventariosCodigoTest(TestCase):
 		kg = conversor.transformarLb_Kg(3.30693)
 		self.assertEqual(kg,1.5 )
 
+	def test_mexico_kg(self):
+		conversor = Conversor();
+		conversor.pais = "0010000"
+		conversor.kilogramo = 1
+		conversor.libra = 1
+		conversor.transformarPorPais()
+		self.assertEqual(conversor.kilogramo , 1)
+		self.assertEqual(conversor.libra , 2.20462)
+
+	def test_eu_kg(self):
+		conversor = Conversor();
+		conversor.pais = "0010001"
+		conversor.kilogramo = 1
+		conversor.libra = 1
+		conversor.transformarPorPais()
+		self.assertEqual(conversor.libra , 1)
+		self.assertEqual(conversor.kilogramo , 0.45359)
+
+	def test_china_kg(self):
+		conversor = Conversor();
+		conversor.pais = "0010002"
+		conversor.kilogramo = 1.23
+		conversor.libra = 12
+		conversor.transformarPorPais()
+		self.assertEqual(conversor.libra , 12)
+		self.assertEqual(conversor.kilogramo , 5.44311)
 
 	def test_calcular_codigo_rango(self):
 		self.probarCalibres('0.007','') 
@@ -219,8 +245,8 @@ class InventariosCodigoTest(TestCase):
 		self.assertEqual(len(response.data),0)
 
 		data = {"compra_detalle":"1","invoice_compra":"ASSS","material":"0050004","calibre":"0.008",
-				"ancho":"35","largo":"1","num_rollo":"A123","peso_kg":"132.0","peso_lb":"0.0","transporte":"ESTAFETA",
-				"pais":"0010001","precio_libra":"0.27","factor":"2.2045","precio_dolar":"18.03",
+				"ancho":"35","largo":"1","num_rollo":"A123","peso_kg":"132.0","peso_lb":"1.32","transporte":"ESTAFETA",
+				"pais":"0010000","precio_libra":"0.27","factor":"2.2045","precio_dolar":"18.03",
 				"precio_tonelada_dolar":"58","factor_impuesto":"2.13","con_comercializadora":"True",
 				"porc_comercializadora":"4","descripcion":"Sin descripcion"	,"comentarios":"Todo esta listo"}
 	
@@ -233,17 +259,20 @@ class InventariosCodigoTest(TestCase):
 		response = self.client.get('/inventarios/', format='json')
 		self.assertEqual(len(response.data),1)
 
-		codigo_producto = response.data[0]['codigo_producto']
-		valor_kilo_dolar = response.data[0]['valor_kilo_dolar']
-		valor_kilo_pesos = response.data[0]['valor_kilo_pesos']
-		valor_tonelada_dolar = response.data[0]['valor_tonelada_dolar']
-		valor_final_kilo_pesos = response.data[0]['valor_final_kilo_pesos']
+		self.assertEqual (response.data[0]['peso_kg'],'132.00000')
+		self.assertEqual (response.data[0]['peso_lb'],'291.00984')
 
-		self.assertEqual (codigo_producto,'C32R3')
-		self.assertEqual(valor_kilo_dolar,'0.5952')
-		self.assertEqual(valor_kilo_pesos,'10.7315')
-		self.assertEqual(valor_tonelada_dolar,'0.0000')		
-		self.assertEqual(valor_final_kilo_pesos,'2.5593')	
+		# codigo_producto = response.data[0]['codigo_producto']
+		# valor_kilo_dolar = response.data[0]['valor_kilo_dolar']
+		# valor_kilo_pesos = response.data[0]['valor_kilo_pesos']
+		# valor_tonelada_dolar = response.data[0]['valor_tonelada_dolar']
+		# valor_final_kilo_pesos = response.data[0]['valor_final_kilo_pesos']
+
+		# self.assertEqual (codigo_producto,'C32R3')
+		# self.assertEqual(valor_kilo_dolar,'0.5952')
+		# self.assertEqual(valor_kilo_pesos,'10.7315')
+		# self.assertEqual(valor_tonelada_dolar,'0.0000')		
+		# self.assertEqual(valor_final_kilo_pesos,'2.5593')	
 
 	def test_enviar_datos_inventario_desde_desde_la_ruta(self):
 		response = self.client.get('/compras_detalles/1/', format='json')
@@ -253,13 +282,18 @@ class InventariosCodigoTest(TestCase):
 		self.assertEqual(len(response.data),0)
 
 		data = {"compra_detalle":"1","invoice_compra":"ASSS","material":"0050004","calibre":"0.008",
-				"ancho":"35","largo":"1","num_rollo":"A123","peso_kg":"132.0","peso_lb":"0.0","transporte":"ESTAFETA",
+				"ancho":"35","largo":"1","num_rollo":"A123","peso_kg":"1132.0","peso_lb":"32.33","transporte":"ESTAFETA",
 				"pais":"0010001","precio_libra":"0.27","factor":"2.2045","precio_dolar":"18.03",
 				"precio_tonelada_dolar":"58","factor_impuesto":"2.13","con_comercializadora":"True",
 				"porc_comercializadora":"4","descripcion":"Sin descripcion"	,"comentarios":"Todo esta listo"}
 		
 		response = self.client.post('/inventarios/',data, format='json')
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+		self.assertEqual(response.data["peso_lb"],"32.33000")
+		self.assertEqual(response.data["peso_kg"],"14.66466")
+
+
 		self.assertEqual(response.data["codigo_producto"],"C32R3")
 
 		self.assertEqual(response.data["valor_kilo_dolar"],"0.5952")

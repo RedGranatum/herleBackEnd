@@ -6,7 +6,7 @@ from proveedores.models import Proveedor
 from catalogo_detalles.models import CatalogoDetalle
 from compras_detalles.models import CompraDetalle
 from compras.models import Compra
-from inventarios.funciones    import CalculoCodigo,CalculoPrecios
+from inventarios.funciones    import CalculoCodigo,CalculoPrecios,Conversor
 
 class Inventario(models.Model):
 	compra_detalle 		 	= models.ForeignKey(CompraDetalle,default="",related_name='inventario_id_compra_detalle', on_delete=models.PROTECT)		
@@ -17,8 +17,8 @@ class Inventario(models.Model):
 	largo          		 	= models.IntegerField(default=0)
 	codigo_producto		 	= models.CharField(max_length=30,default="")
 	num_rollo      		 	= models.CharField(max_length=30,default="",blank=True,unique=True,error_messages={'unique':"El numero de rollo ya existe"})
-	peso_kg        		 	= models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
-	peso_lb        		 	= models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
+	peso_kg        		 	= models.DecimalField(max_digits=13, decimal_places=5,default=0.00)
+	peso_lb        		 	= models.DecimalField(max_digits=13, decimal_places=5,default=0.00)
 	transporte 	   		 	= models.CharField(max_length=50,default="",blank=True)
 	pais  		   		 	= models.ForeignKey(CatalogoDetalle,to_field='cdu_catalogo',default='',related_name='inventario_pais',limit_choices_to={'catalogos': 1}, on_delete=models.PROTECT)						
 	precio_libra   		 	= models.DecimalField(max_digits=18, decimal_places=4,default=0.00)
@@ -38,6 +38,15 @@ class Inventario(models.Model):
 
 	@transaction.atomic
 	def save(self, *args, **kwargs):
+
+		conversor = Conversor();
+		conversor.pais = self.pais.cdu_catalogo
+		conversor.kilogramo = self.peso_kg
+		conversor.libra = self.peso_lb
+		conversor.transformarPorPais()
+		self.peso_kg = str(conversor.kilogramo)
+		self.peso_lb = str(conversor.libra)
+		
 		self.validarDetalleCompra()
 		calculoCodigos = CalculoCodigo()
 		calculoCodigos.calibre = self.calibre
