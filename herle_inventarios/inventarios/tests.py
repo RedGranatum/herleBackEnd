@@ -68,7 +68,22 @@ class InventariosCodigoTest(TestCase):
 		conversor.transformarPorPais()
 		self.assertEqual(conversor.libra , 12)
 		self.assertEqual(conversor.kilogramo , 5.44311)
+	
+	def test_obtener_conversion_kg_lb_mexico(self):
+		response = self.client.get('/inventarios/conversor/?pais=0010000&libra=1&kilogramo=1', format='json')
+		self.assertEqual(response.data['kilogramo'],'1')
+		self.assertEqual(response.data['libra'],'2.20462')
 
+	def test_obtener_conversion_kg_lb_mexico(self):
+		response = self.client.get('/inventarios/conversor/?pais=0010001&libra=1&kilogramo=1', format='json')
+		self.assertEqual(response.data['libra'],'1')
+		self.assertEqual(response.data['kilogramo'],'0.45359')
+	
+	def test_obtener_conversion_kg_lb_china(self):
+		response = self.client.get('/inventarios/conversor/?pais=0010001&libra=2&kilogramo=2', format='json')
+		self.assertEqual(response.data['libra'],'2')
+		self.assertEqual(response.data['kilogramo'],'0.90719')
+	
 	def test_calcular_codigo_rango(self):
 		self.probarCalibres('0.007','') 
 		self.probarCalibres('0.008','C32') 

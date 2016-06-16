@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError,ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from inventarios.funciones import CalculoCodigo,CalculoPrecios
+from inventarios.funciones import CalculoCodigo,CalculoPrecios,Conversor
 from inventarios.serializers import InventarioSerializer
 from inventarios.models import Inventario
 # Create your views here.
@@ -37,6 +37,17 @@ class InventarioLista(APIView):
 			except Exception as ex:				
 				return Response({"Hay errores"}, status=status.HTTP_403_FORBIDDEN)
 		return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ConvertirValores(APIView):
+	def get(self, request):
+		conversor = Conversor();
+		conversor.pais = request.GET['pais']
+		conversor.kilogramo = request.GET['kilogramo']
+		conversor.libra = request.GET['libra']
+		conversor.transformarPorPais()
+
+		resultados ={'kilogramo':str(conversor.kilogramo),'libra':str(conversor.libra)}
+		return  Response(data=resultados, status=status.HTTP_201_CREATED)
 
 class CodigoProducto(APIView):
 	def get(self, request):
