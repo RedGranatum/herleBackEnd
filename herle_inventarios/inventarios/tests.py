@@ -264,6 +264,16 @@ class InventariosCodigoTest(TestCase):
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 		self.assertEqual(response.data, {'Este detalle de compra ya habia sido validado'})
 
+		data = {"compra_detalle":"1","invoice_compra":"ASSS","material":"0050004","calibre":"0.008",
+		"ancho":"35","largo":"1","num_rollo":"A123","peso_kg":"132.0","peso_lb":"0.0","transporte":"ESTAFETA",
+		"pais":"","precio_libra":"0.27","factor":"2.2045","precio_dolar":"18.03",
+		"precio_tonelada_dolar":"58","factor_impuesto":"2.13","con_comercializadora":"True",
+		"porc_comercializadora":"4","descripcion":"Sin descripcion"	,"comentarios":"Todo esta listo"}
+		
+		response = self.client.post('/inventarios/',data, format='json')
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+		self.assertEqual(response.data, {'Este detalle de compra ya habia sido validado'})
+
 	def probarCalculos(self,dict_valores):
 		calculo = CalculoPrecios()
 		calculo.cdu_pais = dict_valores['cdu_pais']
