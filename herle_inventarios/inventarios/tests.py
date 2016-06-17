@@ -15,10 +15,10 @@ class InventariosCodigoTest(TestCase):
 	def setUp(self):
 		self.client = APIClient()
 		cursor = connection.cursor()
-		#cursor.execute("ALTER SEQUENCE catalogos_catalogo_id_seq RESTART WITH 1;")
-		#cursor.execute("ALTER SEQUENCE proveedores_proveedor_id_seq RESTART WITH 1;")
-		#cursor.execute("ALTER SEQUENCE compras_compra_id_seq RESTART WITH 1;")
-		#cursor.execute("ALTER SEQUENCE compras_detalles_compradetalle_id_seq RESTART WITH 1;")
+		cursor.execute("ALTER SEQUENCE catalogos_catalogo_id_seq RESTART WITH 1;")
+		cursor.execute("ALTER SEQUENCE proveedores_proveedor_id_seq RESTART WITH 1;")
+		cursor.execute("ALTER SEQUENCE compras_compra_id_seq RESTART WITH 1;")
+		cursor.execute("ALTER SEQUENCE compras_detalles_compradetalle_id_seq RESTART WITH 1;")
 		
 		self.cargar_catalogos()
 		self.cargar_catalogos_detalles()
