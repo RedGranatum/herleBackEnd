@@ -31,11 +31,11 @@ class InventarioLista(APIView):
 			except IntegrityError as ex:
 				return Response({"La clave ya existe"}, status=status.HTTP_403_FORBIDDEN)
 			except ValidationError as ex:
-				return Response({"Este detalle de compra ya habia sido validado"}, status=status.HTTP_403_FORBIDDEN)
+				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)
 			except ObjectDoesNotExist as ex:
 				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)			
 			except Exception as ex:				
-				return Response({"Hay errores"}, status=status.HTTP_403_FORBIDDEN)
+				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)
 		return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ConvertirValores(APIView):

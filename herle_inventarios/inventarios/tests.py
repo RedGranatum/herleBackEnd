@@ -328,7 +328,7 @@ class InventariosCodigoTest(TestCase):
 		
 		response = self.client.post('/inventarios/',data, format='json')
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-		self.assertEqual(response.data, {'Este detalle de compra ya habia sido validado'})
+		self.assertEqual(response.data,  {'error': "['Este detalle de compra ya habia sido validado']"} )
 
 		data = {"compra_detalle":"1","invoice_compra":"ASSS","material":"0050004","calibre":"0.008",
 		"ancho":"35","largo":"1","num_rollo":"A123","peso_kg":"132.0","peso_lb":"0.0","transporte":"ESTAFETA",

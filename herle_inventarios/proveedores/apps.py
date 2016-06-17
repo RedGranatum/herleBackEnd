@@ -1,4 +1,4 @@
-from django.apps import AppConfig
+gofrom django.apps import AppConfig
 
 
 class ProveedoresConfig(AppConfig):

@@ -15,7 +15,7 @@ class Inventario(models.Model):
 	calibre        		 	= models.DecimalField(max_digits=4, decimal_places=3,default=0.00)
 	ancho          		 	= models.DecimalField(max_digits=5, decimal_places=2,default=0.00)
 	largo          		 	= models.IntegerField(default=0)
-	codigo_producto		 	= models.CharField(max_length=30,default="")
+	codigo_producto		 	= models.CharField(max_length=30,default="",blank=False)
 	num_rollo      		 	= models.CharField(max_length=30,default="",blank=True,unique=True,error_messages={'unique':"El numero de rollo ya existe"})
 	peso_kg        		 	= models.DecimalField(max_digits=13, decimal_places=5,default=0.00)
 	peso_lb        		 	= models.DecimalField(max_digits=13, decimal_places=5,default=0.00)
@@ -54,6 +54,8 @@ class Inventario(models.Model):
 		calculoCodigos.ancho = self.ancho
 		calculoCodigos.largo = self.largo
 		codigo = calculoCodigos.generarCodigoProducto()
+		self.validarCodigo(codigo)
+		
 		self.codigo_producto = codigo
 
 
@@ -72,6 +74,9 @@ class Inventario(models.Model):
 		self.valor_kilo_pesos = calculo.kiloEnPeso()
 		self.valor_tonelada_dolar = calculo.ToneladaEnDolar()
 		self.valor_final_kilo_pesos = calculo.kiloEnPesosFinal()
+
+		self.validarCalculosPrecio(self.valor_final_kilo_pesos)
+
 		compdet_id = self.compra_detalle.id
 		compradet = CompraDetalle.objects.get(id=compdet_id)
 		compradet.validado=True
@@ -80,6 +85,16 @@ class Inventario(models.Model):
 		Compra.objects.filter(id=compradet.compra_id).update(fec_inventario=fecha_actual,fec_real=fecha_actual)
 	
 		super(Inventario, self).save(*args, **kwargs)
+	
+	def validarCodigo(self,codigo_producto):
+		if(codigo_producto.strip()==''):
+			raise ValidationError('El codigo de producto no puede estar vacio')
+		return True
+
+	def validarCalculosPrecio(self,valor_final_kilo_pesos):
+		if((self.pais.cdu_catalogo=="0010001" or self.pais.cdu_catalogo=="0010002") and float(valor_final_kilo_pesos) <= 0):
+			raise ValidationError('El valor final de kilo en pesos no puede ser 0')
+		return True
 
 	def validarDetalleCompra(self):
 		# Si si el detalle de la compra no ha sido ya validado
