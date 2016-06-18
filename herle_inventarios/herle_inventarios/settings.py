@@ -20,7 +20,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'w3etm-!7@*g!4clbez-qr2&k!m_hsbkh*9va1!aw$1(azk^-!g'
+SECRET_KEY = os.getenv('HERLE_SECRET_KEY') 
+#'w3etm-!7@*g!4clbez-qr2&k!m_hsbkh*9va1!aw$1(azk^-!g'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -100,10 +101,10 @@ WSGI_APPLICATION = 'herle_inventarios.wsgi.application'
 DATABASES = {
       'default': {
           'ENGINE': 'django.db.backends.postgresql_psycopg2',
-          'NAME': 'herlebd',                      
-          'USER': 'raultr',
-          'PASSWORD': 'rulo1000',
-          'HOST': 'localhost'
+          'NAME': os.getenv('HERLE_DB_NAME'),                      
+          'USER':  os.getenv('HERLE_DB_USER'),
+          'PASSWORD': os.getenv('HERLE_DB_PASSWORD'),
+          'HOST': os.getenv('HERLE_DB_HOST'),
       },
   }
 
