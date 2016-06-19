@@ -15,9 +15,11 @@ Including another URLconf
 """
 from django.conf.urls import include,url
 from django.contrib import admin
+from rest_framework.authtoken import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^api-token-auth/', views.obtain_auth_token),
     url(r'^', include('catalogos.urls')),
     url(r'^', include('catalogo_detalles.urls')),
     url(r'^', include('proveedores.urls')),
@@ -25,6 +27,10 @@ urlpatterns = [
     url(r'^', include('compras.urls')),
     url(r'^', include('compras_detalles.urls')),
     url(r'^', include('inventarios.urls')),   
+    # from rest_framework.authtoken.models import Token
+    # t=Token.objects.all().get()
+    # t.created
+
 ]
 
 

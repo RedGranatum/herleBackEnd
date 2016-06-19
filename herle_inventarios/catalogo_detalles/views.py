@@ -23,7 +23,7 @@ class CatalogoDetalleMasivo(APIView):
 
 
 class CatalogoDetalleMixin(object):
-	queryset = CatalogoDetalle.objects.all()
+	queryset = CatalogoDetalle.objects.all().order_by('catalogos', 'num_dcatalogo')
 	serializer_class = CatalogoDetalleSerializer
 
 class CatalogoDetalleLista(CatalogoDetalleMixin, ListCreateAPIView):
