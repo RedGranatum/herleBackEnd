@@ -19,3 +19,5 @@ class Compra(models.Model):
 
 	def __str__(self):
 		return self.invoice
+
+# consulta =Compra.objects.filter(compra_detalles__validado=False).distinct('invoice','fec_solicitud')

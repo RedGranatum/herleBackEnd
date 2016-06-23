@@ -4,6 +4,14 @@ from compras_detalles.models import CompraDetalle
 from compras_detalles.serializers import CompraDetalleSerializer,CompraDetalleRelacionSerializer,CompraDetalleModificacionSerializer
 from proveedores.serializers import ProveedorSerializer
 
+class CompraSimpleSerializer(serializers.ModelSerializer):
+		fec_solicitud =serializers.DateTimeField(format='%d/%m/%Y',input_formats=['%d/%m/%Y'])
+				
+		class Meta:
+			model = Compra
+			fields = ( 'id','invoice','fec_solicitud',)
+
+
 class CompraSerializer(serializers.ModelSerializer):
 		fec_solicitud =serializers.DateTimeField(format='%d/%m/%Y',input_formats=['%d/%m/%Y'])
 		fec_aduana =serializers.DateTimeField(format='%d/%m/%Y',input_formats=['%d/%m/%Y'])

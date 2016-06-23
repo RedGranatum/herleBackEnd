@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.db import IntegrityError
 from django.db.models import Q
 from compras.models import Compra
-from compras.serializers import CompraSerializer,CompraConDetalleSerializer,CompraConDetalleNuevaSerializer,CompraConDetalleModificacionSerializer
+from compras.serializers import CompraSerializer,CompraSimpleSerializer,CompraConDetalleSerializer,CompraConDetalleNuevaSerializer,CompraConDetalleModificacionSerializer
 
 class CompraMixin(object):
 	queryset = Compra.objects.all()
@@ -30,6 +30,17 @@ class CompraConDetallesNuevaMixin(object):
 	serializer_class = CompraConDetalleNuevaSerializer
 
 
+
+class ComprasNoValidadas(APIView):
+	def get(self, request,validado='false', format=None):
+		inventariado = False
+		if(validado == 'true'):
+			inventariado = True
+
+		queryset = Compra.objects.filter(compra_detalles__validado=inventariado).distinct('invoice','fec_solicitud')
+		serializer_class = CompraSimpleSerializer(queryset,many=True)
+		return  Response(serializer_class.data)
+
 class CompraConDetallesLista(APIView):
 	def get(self, request, pk=None, format=None):
 		if(pk!=None):
@@ -48,7 +59,7 @@ class CompraConDetallesLista(APIView):
 				datos = CompraConDetalleSerializer(response)		
 				return Response(datos.data, status=status.HTTP_201_CREATED)
 			except IntegrityError as e:
-				return Response({"El numero de invoice ya existe"}, status=status.HTTP_403_FORBIDDEN)
+				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)
 		return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CompraConDetallesActualizacion(APIView):
@@ -71,7 +82,7 @@ class CompraConDetallesActualizacion(APIView):
 
 
 
-	def put(self, request, pk, format=None):          
+	def put(self, request, pk, format=None):  
 		id = self.get_object(pk)
 		serializer_class = CompraConDetalleModificacionSerializer(id,data=request.data)
 		serializer_class.is_valid()
