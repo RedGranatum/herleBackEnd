@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'compras',
     'compras_detalles',
     'inventarios',
+    'ventas',
 ]
 
 MIDDLEWARE_CLASSES = [
