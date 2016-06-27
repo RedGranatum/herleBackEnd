@@ -1,4 +1,5 @@
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from django.db.models import Q
 from django.shortcuts import render
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError,ObjectDoesNotExist
@@ -59,3 +60,13 @@ class VentaConDetallesLista(APIView):
 			except IntegrityError as e:
 				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)
 		return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class VentaFiltrosMixin(object):
+	model = Venta
+	serializer_class = VentaSerializer
+
+class VentaBusqueda(VentaFiltrosMixin,ListAPIView):
+	def get_queryset(self):
+		valor_buscado = self.kwargs['valor_buscado']
+		queryset=self.model.objects.filter(Q(num_documento__icontains = valor_buscado))
+		return queryset
