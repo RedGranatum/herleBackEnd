@@ -1,4 +1,5 @@
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from django.db.models import Q
 from django.shortcuts import render
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError,ObjectDoesNotExist
@@ -8,7 +9,17 @@ from rest_framework import status
 from inventarios.funciones import CalculoCodigo,CalculoPrecios,Conversor
 from inventarios.serializers import InventarioSerializer
 from inventarios.models import Inventario
-# Create your views here.
+
+class InventarioFiltrosMixin(object):
+	model = Inventario
+	serializer_class = InventarioSerializer
+
+class InventarioBusqueda(InventarioFiltrosMixin,ListAPIView):
+	def get_queryset(self):
+		valor_buscado = self.kwargs['valor_buscado']
+		queryset=self.model.objects.filter(Q(codigo_producto__icontains = valor_buscado) | Q(num_rollo__icontains = valor_buscado)  )
+		return queryset
+
 
 class InventarioMixin(object):
 	queryset = Inventario.objects.all()
