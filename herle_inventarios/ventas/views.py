@@ -8,6 +8,15 @@ from rest_framework import status
 from ventas.models import Venta
 from ventas.serializers import VentaSerializer,VentaConDetalleNuevaSerializer,VentaConDetalleSerializer
 
+class VentaConDetallesMixin(object):
+	queryset = Venta.objects.all()
+	#queryset =Compra.objects.select_related()
+	serializer_class = VentaConDetalleSerializer
+
+
+class VentasConDetallesIndividual(VentaConDetallesMixin,RetrieveUpdateDestroyAPIView):
+	pass	
+
 class VentasLista(APIView):	
 	def get(self, request, format=None):
 		queryset = Venta.objects.all()
