@@ -3,4 +3,6 @@ from ventas import views
 
 urlpatterns =[
 	url(r'^ventas/$', views.VentasLista.as_view(),name="ventas_lista"),
+	url(r'^ventas_con_detalles/$', views.VentaConDetallesLista.as_view(),name="ventas_detalles_lista"),
+
 ]	

@@ -6,6 +6,7 @@ from proveedores.models import Proveedor
 from catalogo_detalles.models import CatalogoDetalle
 from compras_detalles.models import CompraDetalle
 from compras.models import Compra
+from existencias.models import Existencia
 from inventarios.funciones    import CalculoCodigo,CalculoPrecios,Conversor
 
 class Inventario(models.Model):
@@ -47,6 +48,8 @@ class Inventario(models.Model):
 		self.peso_kg = str(conversor.kilogramo)
 		self.peso_lb = str(conversor.libra)
 		
+
+
 		self.validarDetalleCompra()
 		calculoCodigos = CalculoCodigo()
 		calculoCodigos.calibre = self.calibre
@@ -85,6 +88,14 @@ class Inventario(models.Model):
 		Compra.objects.filter(id=compradet.compra_id).update(fec_inventario=fecha_actual,fec_real=fecha_actual)
 	
 		super(Inventario, self).save(*args, **kwargs)
+	
+		existencias = Existencia()
+		existencias.num_rollo = self.num_rollo
+		existencias.entrada_kg = self.peso_kg
+		existencias.salida_kg = 0.0
+		existencias.operacion = 'compra'
+		existencias.id_operacion = self.id
+		existencias.save()
 	
 	def validarCodigo(self,codigo_producto):
 		if(codigo_producto.strip()==''):
