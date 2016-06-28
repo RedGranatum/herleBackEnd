@@ -36,7 +36,6 @@ class VentaDetalle(models.Model):
 		if(cant.count()==0):
 			raise ValidationError('El numero de rollo no existe')
 		exis =  cant[0]['existencia_kg']
-		import ipdb;ipdb.set_trace()
 		if(exis < self.peso_kg):
 			raise ValidationError('No hay existencias disponibles para el rollo ' + self.num_rollo)
 		return True

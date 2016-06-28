@@ -13,7 +13,7 @@ class ExistenciaRollo(APIView):
 		resultado 		 = self.existencias_por_num_rollo(num_rollo)
 		return  Response(data=resultado, status=status.HTTP_201_CREATED)
 
-	def existencias_por_num_rolloCANT(self,num_rollo):
+	def existencias_por_num_rollo(self,num_rollo):
 		exist = Existencia.objects.values('num_rollo').filter(num_rollo=num_rollo).annotate(entradas_kd=Sum('entrada_kg'),salidas_kg=Sum('salida_kg'),existencia_kg=Sum('entrada_kg')-Sum('salida_kg'))
 		return exist
 
@@ -21,3 +21,10 @@ class ExistenciaAgrupada(APIView):
 	def get(self ,request):
 		resultado = Existencia.objects.values('num_rollo').annotate(entradas_kd=Sum('entrada_kg'),salidas_kg=Sum('salida_kg'),existencia_kg=Sum('entrada_kg')-Sum('salida_kg'))
 		return  Response(data=resultado, status=status.HTTP_201_CREATED)
+
+
+class ExistenciaAgrupadaNumRollo(APIView):
+	def get(self ,request,num_rollo):
+		resultado = Existencia.objects.values('num_rollo').filter(num_rollo__icontains =num_rollo).annotate(entradas_kd=Sum('entrada_kg'),salidas_kg=Sum('salida_kg'),existencia_kg=Sum('entrada_kg')-Sum('salida_kg'))
+		return  Response(data=resultado, status=status.HTTP_201_CREATED)
+
