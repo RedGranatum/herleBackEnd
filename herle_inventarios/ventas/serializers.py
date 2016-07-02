@@ -27,7 +27,7 @@ class VentaConDetalleNuevaSerializer(serializers.ModelSerializer):
 		venta = Venta.objects.create(**validated_data)
 		importe_total = Decimal('0.0')
 		for detalle_datos in venta_detalles_datos:
-			importe_total = importe_total + detalle_datos.get('precio_neto')
+			importe_total = importe_total + (detalle_datos.get('peso_kg') * detalle_datos.get('precio_neto') )
 			VentaDetalle.objects.create(venta=venta, **detalle_datos)
 		cliente_pago = ClientesPago()
 		cliente_pago.ventas = venta
