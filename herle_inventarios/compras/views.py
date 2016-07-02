@@ -58,7 +58,7 @@ class CompraConDetallesLista(APIView):
 				response = serializer_class.save()
 				datos = CompraConDetalleSerializer(response)		
 				return Response(datos.data, status=status.HTTP_201_CREATED)
-			except IntegrityError as e:
+			except IntegrityError as ex:
 				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)
 		return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 

@@ -30,10 +30,12 @@ class ClientesPago(models.Model):
 		qr = ClientesPagoConsultas()
 		res = qr.saldo_agrupado_por_venta(self.ventas) 
 		if(self.abono > res['saldo']):
-			raise ValidationError('El abono no puede ser mayor que es saldo de la factura')
+			raise ValidationError('El abono no puede ser mayor al saldo de la factura')
 		return True
 
 class ClientesPagoConsultas:
 	def saldo_agrupado_por_venta(self,venta):
 			resultado = ClientesPago.objects.values('ventas').filter(ventas = venta).annotate(cargo_suma=Sum('cargo'),abono_suma=Sum('abono'),saldo=Sum('cargo')-Sum('abono'))
+			if(resultado.count() == 0):
+				return {'saldo': 0.0}
 			return resultado[0]
