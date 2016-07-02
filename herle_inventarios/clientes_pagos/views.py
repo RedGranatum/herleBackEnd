@@ -17,7 +17,7 @@ class ClientesPagoLista(ClientesPagoDetalleMixin, ListCreateAPIView):
 
 class DetalleCargoAbonoPorVenta(APIView):
 	def get(self ,request,venta):
-		queryset = ClientesPago.objects.filter(ventas=venta).order_by('fecha',)
+		queryset = ClientesPago.objects.filter(ventas=venta).order_by('id',)
 		serializer_class = ClientesPagoSerializer(queryset,many=True)
 		return  Response(data=serializer_class.data, status=status.HTTP_201_CREATED)
 
