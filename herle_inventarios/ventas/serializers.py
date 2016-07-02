@@ -1,6 +1,9 @@
 from rest_framework import serializers
+from decimal import *
 from .models import Venta
 from ventas_detalles.models import VentaDetalle
+from clientes_pagos.models import ClientesPago
+
 from ventas_detalles.serializers import VentaDetalleSerializer
 from clientes.serializers import ClienteSerializer
 
@@ -22,8 +25,18 @@ class VentaConDetalleNuevaSerializer(serializers.ModelSerializer):
 	def create(self, validated_data):
 		venta_detalles_datos = validated_data.pop('venta_detalles')
 		venta = Venta.objects.create(**validated_data)
+		importe_total = Decimal('0.0')
 		for detalle_datos in venta_detalles_datos:
+			importe_total = importe_total + detalle_datos.get('precio_neto')
 			VentaDetalle.objects.create(venta=venta, **detalle_datos)
+		cliente_pago = ClientesPago()
+		cliente_pago.ventas = venta
+		cliente_pago.fecha = venta.fec_venta
+		cliente_pago.cargo = importe_total
+		cliente_pago.abono = 0.0
+		cliente_pago.observaciones = 'Cargo de la venta'	
+		cliente_pago.save()
+
 		return venta
 
 class VentaConDetalleSerializer(serializers.ModelSerializer):

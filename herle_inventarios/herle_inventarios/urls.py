@@ -29,6 +29,8 @@ urlpatterns = [
     url(r'^', include('inventarios.urls')),
     url(r'^', include('ventas.urls')),   
     url(r'^', include('existencias.urls')),   
+    url(r'^', include('clientes_pagos.urls')),   
+    
     
     # from rest_framework.authtoken.models import Token
     # t=Token.objects.all().get()
