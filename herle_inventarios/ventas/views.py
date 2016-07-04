@@ -7,9 +7,9 @@ from django.db import transaction
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.db import connection
 from ventas.models import Venta
 from ventas.serializers import VentaSerializer,VentaConDetalleNuevaSerializer,VentaConDetalleSerializer
-
 class VentaConDetallesMixin(object):
 	queryset = Venta.objects.all()
 	#queryset =Compra.objects.select_related()
@@ -74,3 +74,42 @@ class VentaBusqueda(VentaFiltrosMixin,ListAPIView):
 		valor_buscado = self.kwargs['valor_buscado']
 		queryset=self.model.objects.filter(Q(num_documento__icontains = valor_buscado))
 		return queryset
+
+class CostosPorNumRollo(APIView):
+	def get(self ,request):
+		cursor = connection.cursor()
+
+		consulta ="""
+			select  row_number() over() as id,inv.id as inventario_id,inv.codigo_producto,inv.num_rollo,inv.compra_detalle_id,
+			inv.peso_lb ,inv.peso_kg as compra_peso_kg,inv.valor_final_kilo_pesos as precio_kg_compra,comprac.invoice,comprac.proveedor_id,
+			proveedor.codigo as codigo_proveedor,proveedor.nombre as nombre_proveedor,ventad.peso_kg as venta_peso_kg,
+			ventad.precio_neto as precio_kg_venta,ventad.venta_id,
+			ventac.fec_venta,ventac.num_documento,ventac.bln_activa,ventac.cliente_id,
+ 			cliente.codigo as codigo_cliente,cliente.nombre as nombre_cliente, 
+			(ventad.peso_kg * inv.valor_final_kilo_pesos) as precio_neto_compra,
+			(ventad.peso_kg * ventad.precio_neto) as precio_neto_venta,
+			(ventad.peso_kg * ventad.precio_neto) - (ventad.peso_kg * inv.valor_final_kilo_pesos) as utilidad
+			from inventarios_inventario as inv 
+			join compras_detalles_compradetalle as comprad on inv.compra_detalle_id = comprad.id
+			join compras_compra as comprac on comprac.id = comprad.compra_id
+			join proveedores_proveedor as proveedor on proveedor.id = comprac.proveedor_id
+			left join ventas_detalles_ventadetalle  as ventad on ventad.num_rollo = inv.num_rollo
+			left join ventas_venta as ventac on ventad.venta_id = ventac.id
+			left join clientes_cliente as cliente  on cliente.id = ventac.cliente_id
+			order by inv.num_rollo,ventac.id
+			"""
+		cursor.execute(consulta)
+		#resultado= cursor.fetchall()
+		resultado = self.dictfetchall(cursor)
+		#resultado = Existencia.objects.values('num_rollo').annotate(entradas_kd=Sum('entrada_kg'),salidas_kg=Sum('salida_kg'),existencia_kg=Sum('entrada_kg')-Sum('salida_kg'))
+		return  Response(data=resultado, status=status.HTTP_201_CREATED)
+
+	def dictfetchall(self,cursor):
+		"Return all rows from a cursor as a dict"
+		columns = [col[0] for col in cursor.description]
+		return [
+			dict(zip(columns, row))
+			for row in cursor.fetchall()
+		]
+
+

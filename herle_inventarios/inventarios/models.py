@@ -76,7 +76,9 @@ class Inventario(models.Model):
 		self.valor_kilo_dolar = calculo.kiloEnDolar()
 		self.valor_kilo_pesos = calculo.kiloEnPeso()
 		self.valor_tonelada_dolar = calculo.ToneladaEnDolar()
-		self.valor_final_kilo_pesos = calculo.kiloEnPesosFinal()
+		#Si es Estados unido o Chinca se calcula el precio sino se toma el precio que viene
+		if(self.pais.cdu_catalogo=="0010001" or self.pais.cdu_catalogo=="0010002"):
+			self.valor_final_kilo_pesos = calculo.kiloEnPesosFinal()
 
 		self.validarCalculosPrecio(self.valor_final_kilo_pesos)
 
@@ -103,7 +105,7 @@ class Inventario(models.Model):
 		return True
 
 	def validarCalculosPrecio(self,valor_final_kilo_pesos):
-		if((self.pais.cdu_catalogo=="0010001" or self.pais.cdu_catalogo=="0010002") and float(valor_final_kilo_pesos) <= 0):
+		if(float(valor_final_kilo_pesos) <= 0):
 			raise ValidationError('El valor final de kilo en pesos no puede ser 0')
 		return True
 
