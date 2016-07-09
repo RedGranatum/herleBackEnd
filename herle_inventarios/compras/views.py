@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from django.shortcuts import render
 from django.db import IntegrityError
 from django.db.models import Q
+from django.db import connection
 from compras.models import Compra
 from compras.serializers import CompraSerializer,CompraSimpleSerializer,CompraConDetalleSerializer,CompraConDetalleNuevaSerializer,CompraConDetalleModificacionSerializer
 
@@ -136,3 +137,58 @@ class CompraBusqueda(CompraFiltrosMixin,ListAPIView):
 		valor_buscado = self.kwargs['valor_buscado']
 		queryset=self.model.objects.filter(Q(invoice__icontains = valor_buscado))
 		return queryset
+
+
+class CompraConDetallesInventarioConsulta(APIView):
+	def dictfetchall(self,cursor):
+		"Return all rows from a cursor as a dict"
+		columns = [col[0] for col in cursor.description]
+		return [
+			dict(zip(columns, row))
+			for row in cursor.fetchall()
+		]
+
+	def get(self ,request):
+		cursor = connection.cursor()
+
+		columnas_compra =  """
+		        select compra.id,  compra.invoice,   compra.fec_solicitud,   compra.fec_aduana,   compra.fec_inventario, 
+				compra.fec_real, compra.bln_activa,compra.proveedor_id,prove.codigo as proveedor_codigo,prove.nombre as proveedor_nombre,
+				prove.pais_id as proveedor_pais_id,cpais.descripcion1 as proveedor_pais, 
+						   """
+		columnas_detalle = """ 
+				detalle.id as detalle_id,   detalle.dsc_material  as detalle_dsc_material,   detalle.calibre  as detalle_calibre,   detalle.ancho  as detalle_ancho,   detalle.largo  as detalle_largo,   detalle.peso_kg  as detalle_peso_kg, 
+				detalle.peso_lb  as detalle_peso_lb,   detalle.num_rollo  as detalle_num_rollo,   detalle.precio  as detalle_precio, 
+				detalle.material_id  as detalle_material_id, cmat1.descripcion1 detalle_material,detalle.validado  as detalle_validado, 
+						   """ 
+		columnas_inventario = """ 
+			  inv.id as inv_id,   inv.calibre as inv_calibre,   inv.invoice_compra as inv_invoice_compra, 
+			  inv.ancho as inv_ancho,   inv.largo  as inv_largo,   inv.codigo_producto  as inv_codigo_producto,  
+			  inv.num_rollo  as inv_num_rollo,   inv.peso_kg as inv_peso_kg,   inv.peso_lb as inv_peso_lb,  
+			  inv.transporte as inv_transporte ,   inv.precio_libra as inv_precio_libra,   inv.factor  as inv_factor,
+			  inv.precio_dolar  as inv_precio_dolar,   inv.factor_impuesto as inv_factor_impuesto,  
+			  inv.con_comercializadora as inv_con_comercializadora ,   inv.factor_kilos as inv_factor_kilos,   
+			  inv.valor_kilo_dolar as inv_valor_kilo_dolar,  inv.valor_tonelada_dolar as inv_valor_tonelada_dolar, 
+			  inv.valor_kilo_pesos as inv_valor_kilo_pesos,   inv.valor_final_kilo_pesos as inv_valor_final_kilo_pesos, 
+			  inv.material_id as inv_material_id, cmat2.descripcion1 inv_material,
+			  inv.porc_comercializadora as inv_porc_comercializadora,   inv.precio_tonelada_dolar as inv_precio_tonelada_dolar,
+			  inv.pais_id as inv_pais_id  """
+		
+		union =""" 
+		          from public.compras_compra as compra
+		          join compras_detalles_compradetalle as detalle on compra.id = detalle.compra_id
+				  left join inventarios_inventario as inv on detalle.id = inv.compra_detalle_id
+				  join proveedores_proveedor as prove on prove.id = compra.proveedor_id
+				  join catalogo_detalles_catalogodetalle as cmat1 on cmat1.cdu_catalogo = detalle.material_id
+				  join catalogo_detalles_catalogodetalle as cmat2 on cmat2.cdu_catalogo = inv.material_id
+				  join catalogo_detalles_catalogodetalle as cpais on cpais.cdu_catalogo = prove.pais_id
+				  where compra.id<3
+				  order by compra.id,detalle.id
+				"""
+		consulta = columnas_compra + columnas_detalle + columnas_inventario + union
+		#import ipdb;ipdb.set_trace()
+		cursor.execute(consulta)
+		#resultado= cursor.fetchall()
+		resultado = self.dictfetchall(cursor)
+		#resultado = Existencia.objects.values('num_rollo').annotate(entradas_kd=Sum('entrada_kg'),salidas_kg=Sum('salida_kg'),existencia_kg=Sum('entrada_kg')-Sum('salida_kg'))
+		return  Response(data=resultado, status=status.HTTP_201_CREATED)
