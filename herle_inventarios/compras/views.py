@@ -149,15 +149,20 @@ class CompraConDetallesInventarioConsulta(APIView):
 		]
 
 	def get(self ,request):
+		fec_inicial	= request.GET['fec_inicial']
+		fec_final  	= request.GET['fec_final'] 
+		modulo  	= request.GET['modulo'] 
+		
 		cursor = connection.cursor()
 
+
 		columnas_compra =  """
-		        select compra.id,  compra.invoice,   compra.fec_solicitud,   compra.fec_aduana,   compra.fec_inventario, 
+				select compra.id as id_compra,  compra.invoice,  to_char( compra.fec_solicitud, 'DD-MM-YYYY') as fec_solicitud,   compra.fec_aduana,   compra.fec_inventario, 
 				compra.fec_real, compra.bln_activa,compra.proveedor_id,prove.codigo as proveedor_codigo,prove.nombre as proveedor_nombre,
 				prove.pais_id as proveedor_pais_id,cpais.descripcion1 as proveedor_pais, 
 						   """
 		columnas_detalle = """ 
-				detalle.id as detalle_id,   detalle.dsc_material  as detalle_dsc_material,   detalle.calibre  as detalle_calibre,   detalle.ancho  as detalle_ancho,   detalle.largo  as detalle_largo,   detalle.peso_kg  as detalle_peso_kg, 
+				detalle.id as id,detalle.id as detalle_id,   detalle.dsc_material  as detalle_dsc_material,   detalle.calibre  as detalle_calibre,   detalle.ancho  as detalle_ancho,   detalle.largo  as detalle_largo,   detalle.peso_kg  as detalle_peso_kg, 
 				detalle.peso_lb  as detalle_peso_lb,   detalle.num_rollo  as detalle_num_rollo,   detalle.precio  as detalle_precio, 
 				detalle.material_id  as detalle_material_id, cmat1.descripcion1 detalle_material,detalle.validado  as detalle_validado, 
 						   """ 
@@ -175,19 +180,32 @@ class CompraConDetallesInventarioConsulta(APIView):
 			  inv.pais_id as inv_pais_id  """
 		
 		union =""" 
-		          from public.compras_compra as compra
-		          join compras_detalles_compradetalle as detalle on compra.id = detalle.compra_id
+				  from public.compras_compra as compra
+				  join compras_detalles_compradetalle as detalle on compra.id = detalle.compra_id
 				  left join inventarios_inventario as inv on detalle.id = inv.compra_detalle_id
 				  join proveedores_proveedor as prove on prove.id = compra.proveedor_id
 				  join catalogo_detalles_catalogodetalle as cmat1 on cmat1.cdu_catalogo = detalle.material_id
 				  join catalogo_detalles_catalogodetalle as cmat2 on cmat2.cdu_catalogo = inv.material_id
 				  join catalogo_detalles_catalogodetalle as cpais on cpais.cdu_catalogo = prove.pais_id
-				  where compra.id<3
-				  order by compra.id,detalle.id
 				"""
-		consulta = columnas_compra + columnas_detalle + columnas_inventario + union
+		condicion_compras = """
+					where compra.fec_solicitud >= %s and compra.fec_solicitud <=%s
+					order by compra.id,detalle.id
+				"""
+		condicion_inventarios = """
+					where compra.fec_real >= %s and compra.fec_real <=%s
+					order by compra.id,inv.id
+				"""
+		condicion = condicion_compras
+
+		if(modulo == "inventario"):
+			condicion = condicion_inventarios
+
+
+		consulta = columnas_compra + columnas_detalle + columnas_inventario + union + condicion
+
 		#import ipdb;ipdb.set_trace()
-		cursor.execute(consulta)
+		cursor.execute(consulta,[fec_inicial,fec_final])
 		#resultado= cursor.fetchall()
 		resultado = self.dictfetchall(cursor)
 		#resultado = Existencia.objects.values('num_rollo').annotate(entradas_kd=Sum('entrada_kg'),salidas_kg=Sum('salida_kg'),existencia_kg=Sum('entrada_kg')-Sum('salida_kg'))
