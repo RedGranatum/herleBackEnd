@@ -41,7 +41,9 @@ class Inventario(models.Model):
 	def save(self, *args, **kwargs):
 
 		conversor = Conversor();
-		conversor.pais = self.pais.cdu_catalogo
+		#En inventarios siempre se tranforma de kg a libra 
+		#Por eso se envia 0010000 que es Mexico
+		conversor.pais = "0010000"
 		conversor.kilogramo = self.peso_kg
 		conversor.libra = self.peso_lb
 		conversor.transformarPorPais()
