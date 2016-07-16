@@ -188,10 +188,13 @@ class CalculoPrecios(object):
 		return str(round(valor,4))
 
 	def kiloEnPeso(self):
+		# Kilo en peso
 		if(self.cdu_pais!="0010001"):
 			return '0.0'
 		kilo_dolar = self.kiloEnDolar()
 		valor = Decimal(kilo_dolar) * Decimal(self.precio_dolar)
+		if(self.con_comercializadora==True):
+			valor = valor * (1 + Decimal(self.porc_comercializadora)/1000)
 		return str(round(valor,4))
 	
 	def ToneladaEnDolar(self):
@@ -213,8 +216,6 @@ class CalculoPrecios(object):
 
 	def kiloEnPesosEU(self):
 		valor = Decimal(self.kiloEnPeso())
-		if(self.con_comercializadora==True):
-			valor = valor * (Decimal(self.porc_comercializadora)/100)
 		
 		valor = valor + Decimal(self.factor_impuesto)
 		return str(round(valor,4))
