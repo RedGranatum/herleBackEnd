@@ -85,10 +85,12 @@ class CostosPorNumRollo(APIView):
 			proveedor.codigo as codigo_proveedor,proveedor.nombre as nombre_proveedor,ventad.peso_kg as venta_peso_kg,
 			ventad.precio_neto as precio_kg_venta,ventad.venta_id,
 			ventac.fec_venta,ventac.num_documento,ventac.bln_activa,ventac.cliente_id,
- 			cliente.codigo as codigo_cliente,cliente.nombre as nombre_cliente, 
+			cliente.codigo as codigo_cliente,cliente.nombre as nombre_cliente, 
 			(ventad.peso_kg * inv.valor_final_kilo_pesos) as precio_neto_compra,
 			(ventad.peso_kg * ventad.precio_neto) as precio_neto_venta,
 			(ventad.peso_kg * ventad.precio_neto) - (ventad.peso_kg * inv.valor_final_kilo_pesos) as utilidad
+			,exist.salidas_kg as total_salida_kg, exist.existencia_kg
+			, (exist.existencia_kg * inv.valor_final_kilo_pesos) as costo_inventario
 			from inventarios_inventario as inv 
 			join compras_detalles_compradetalle as comprad on inv.compra_detalle_id = comprad.id
 			join compras_compra as comprac on comprac.id = comprad.compra_id
@@ -96,6 +98,14 @@ class CostosPorNumRollo(APIView):
 			left join ventas_detalles_ventadetalle  as ventad on ventad.num_rollo = inv.num_rollo
 			left join ventas_venta as ventac on ventad.venta_id = ventac.id
 			left join clientes_cliente as cliente  on cliente.id = ventac.cliente_id
+			left join (
+				select  exist.num_rollo,
+				sum(exist.entrada_kg) as entradas_kg,sum(exist.salida_kg) as salidas_kg,
+				sum(exist.entrada_kg) - sum(exist.salida_kg) as existencia_kg
+				from existencias_existencia as exist
+				group by exist.num_rollo
+				) exist
+				on exist.num_rollo = inv.num_rollo
 			order by inv.num_rollo,ventac.id
 			"""
 		cursor.execute(consulta)
