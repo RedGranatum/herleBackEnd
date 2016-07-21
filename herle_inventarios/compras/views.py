@@ -8,6 +8,8 @@ from django.db.models import Q
 from django.db import connection
 from compras.models import Compra
 from compras.serializers import CompraSerializer,CompraSimpleSerializer,CompraConDetalleSerializer,CompraConDetalleNuevaSerializer,CompraConDetalleModificacionSerializer
+import datetime
+from django.utils.timezone import get_current_timezone
 
 class CompraMixin(object):
 	queryset = Compra.objects.all()
@@ -149,9 +151,14 @@ class CompraConDetallesInventarioConsulta(APIView):
 		]
 
 	def get(self ,request):
-		fec_inicial	= request.GET['fec_inicial']
-		fec_final  	= request.GET['fec_final'] 
 		modulo  	= request.GET['modulo'] 
+		
+		#tz = get_current_timezone()
+		#fec_inicial = tz.localize(date_object)
+		formatmx = "%d/%m/%Y"
+		formateu = "%Y%m%d"
+		fec_inicial = datetime.datetime.strptime(request.GET['fec_inicial'], formatmx).strftime(formateu)
+		fec_final   = datetime.datetime.strptime(request.GET['fec_final'], formatmx).strftime(formateu)
 		
 		cursor = connection.cursor()
 
