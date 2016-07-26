@@ -155,6 +155,8 @@ class CompraConDetallesInventarioConsulta(APIView):
 		
 		#tz = get_current_timezone()
 		#fec_inicial = tz.localize(date_object)
+		invoice = request.GET['invoice']
+
 		formatmx = "%d/%m/%Y"
 		formateu = "%Y%m%d"
 		fec_inicial = datetime.datetime.strptime(request.GET['fec_inicial'], formatmx).strftime(formateu)
@@ -171,7 +173,7 @@ class CompraConDetallesInventarioConsulta(APIView):
 		columnas_detalle = """ 
 				detalle.id as id,detalle.id as detalle_id,   detalle.dsc_material  as detalle_dsc_material,   detalle.calibre  as detalle_calibre,   detalle.ancho  as detalle_ancho,   detalle.largo  as detalle_largo,   detalle.peso_kg  as detalle_peso_kg, 
 				detalle.peso_lb  as detalle_peso_lb,   detalle.num_rollo  as detalle_num_rollo,   detalle.precio  as detalle_precio, 
-				detalle.material_id  as detalle_material_id, cmat1.descripcion1 detalle_material,detalle.validado  as detalle_validado, 
+				detalle.material_id  as detalle_material_id, cmat1.descripcion1 detalle_material,coalesce(detalle.validado,false)  as detalle_validado, 
 						   """ 
 		columnas_inventario = """ 
 			  inv.id as inv_id,   inv.calibre as inv_calibre,   inv.invoice_compra as inv_invoice_compra, 
@@ -192,26 +194,39 @@ class CompraConDetallesInventarioConsulta(APIView):
 				  left join inventarios_inventario as inv on detalle.id = inv.compra_detalle_id
 				  join proveedores_proveedor as prove on prove.id = compra.proveedor_id
 				  join catalogo_detalles_catalogodetalle as cmat1 on cmat1.cdu_catalogo = detalle.material_id
-				  join catalogo_detalles_catalogodetalle as cmat2 on cmat2.cdu_catalogo = inv.material_id
+				  left join catalogo_detalles_catalogodetalle as cmat2 on cmat2.cdu_catalogo = inv.material_id
 				  join catalogo_detalles_catalogodetalle as cpais on cpais.cdu_catalogo = prove.pais_id
 				"""
 		condicion_compras = """
 					where compra.fec_solicitud >= %s and compra.fec_solicitud <=%s
 					order by compra.id,detalle.id
 				"""
+
 		condicion_inventarios = """
 					where compra.fec_real >= %s and compra.fec_real <=%s
 					order by compra.id,inv.id
 				"""
+		condicion_inventarios_invoice = """
+					where lower(compra.invoice) = LOWER( %s)
+					order by compra.id,inv.id
+				"""
+		
+
 		condicion = condicion_compras
 
 		if(modulo == "inventario"):
 			condicion = condicion_inventarios
+		
+		if(invoice != ""):
+			condicion = condicion_inventarios_invoice
+			consulta = columnas_compra + columnas_detalle + columnas_inventario + union + condicion
+			cursor.execute(consulta,[invoice])
+			resultado = self.dictfetchall(cursor)
+			return  Response(data=resultado, status=status.HTTP_201_CREATED)
 
 
 		consulta = columnas_compra + columnas_detalle + columnas_inventario + union + condicion
 
-		#import ipdb;ipdb.set_trace()
 		cursor.execute(consulta,[fec_inicial,fec_final])
 		#resultado= cursor.fetchall()
 		resultado = self.dictfetchall(cursor)
