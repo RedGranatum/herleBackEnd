@@ -77,11 +77,14 @@ class VentaBusqueda(VentaFiltrosMixin,ListAPIView):
 
 class CostosPorNumRollo(APIView):
 	def get(self ,request):
+		num_rollo = request.GET['num_rollo']
+
 		cursor = connection.cursor()
 
-		consulta ="""
+		columnas ="""
 			select  row_number() over() as id,inv.id as inventario_id,inv.codigo_producto,inv.num_rollo,inv.compra_detalle_id,
-			inv.peso_lb ,inv.peso_kg as compra_peso_kg,inv.valor_final_kilo_pesos as precio_kg_compra,comprac.invoice,comprac.proveedor_id,
+			inv.peso_lb ,inv.peso_kg as compra_peso_kg,inv.valor_final_kilo_pesos as precio_kg_compra,
+			comprac.invoice,comprac.proveedor_id,comprac.fec_real as fec_compra,
 			proveedor.codigo as codigo_proveedor,proveedor.nombre as nombre_proveedor,ventad.peso_kg as venta_peso_kg,
 			ventad.precio_neto as precio_kg_venta,ventad.venta_id,
 			ventac.fec_venta,ventac.num_documento,ventac.bln_activa,ventac.cliente_id,
@@ -106,8 +109,23 @@ class CostosPorNumRollo(APIView):
 				group by exist.num_rollo
 				) exist
 				on exist.num_rollo = inv.num_rollo
-			order by inv.num_rollo,ventac.id
+			
 			"""
+		condicion = ""
+
+		orden =" order by inv.num_rollo,ventac.id"
+		
+		condicion_por_num_rollo = """
+					where lower(inv.num_rollo) = LOWER( %s)
+				"""
+		if(num_rollo != ""):
+			condicion = condicion_por_num_rollo
+			consulta = columnas + condicion + orden
+			cursor.execute(consulta,[num_rollo])
+			resultado = self.dictfetchall(cursor)
+			return  Response(data=resultado, status=status.HTTP_201_CREATED)
+
+		consulta = columnas + condicion + orden
 		cursor.execute(consulta)
 		#resultado= cursor.fetchall()
 		resultado = self.dictfetchall(cursor)
