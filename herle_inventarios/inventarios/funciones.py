@@ -1,6 +1,12 @@
 from decimal import *
+import math
 from catalogo_detalles.models import CatalogoDetalle
 import inspect, itertools 
+
+def truncar_decimales(valor, decimales):
+	valor1 = round(round(float(valor)*(10.0**decimales),10),0)
+	valor2 = (10.0**decimales)
+	return round(valor1 / valor2,decimales)
 
 class Conversor(object):
 	def __init__(self):
@@ -13,13 +19,14 @@ class Conversor(object):
 	eu     = "0010001"
 	china  = "0010002"
 
+
 	def transformarKg_Lb(self, kg):
-		lb = float(kg) * self.kilo_en_libra
-		return round((lb),5)
+		calculo = float(kg) * self.kilo_en_libra
+		return truncar_decimales(calculo,5)
 
 	def transformarLb_Kg(self, lb):
 		calculo = ((float(lb) / self.kilo_en_libra))
-		return  round(calculo,5)
+		return truncar_decimales(calculo,5)
 
 	def transformarPorPais(self):
 		if(self.pais == self.mexico):
@@ -185,7 +192,8 @@ class CalculoPrecios(object):
 		if(self.cdu_pais!="0010001"):
 			return '0.0'
 		valor = Decimal(self.precio_libra_centavos) *  Decimal(self.factor)
-		return str(round(valor,4))
+		return str(truncar_decimales(valor,4))
+		#return str(round(valor,4))
 
 	def kiloEnPeso(self):
 		# Kilo en peso
@@ -195,13 +203,15 @@ class CalculoPrecios(object):
 		valor = Decimal(kilo_dolar) * Decimal(self.precio_dolar)
 		if(self.con_comercializadora==True):
 			valor = valor * (1 + Decimal(self.porc_comercializadora)/1000)
-		return str(round(valor,4))
+		return str(truncar_decimales(valor,4))
+		#return str(round(valor,4))
 	
 	def ToneladaEnDolar(self):
 		if(self.cdu_pais!="0010002"):
 			return '0.0'
 		valor = Decimal(self.precio_tonelada_dolar) * Decimal(self.precio_dolar)
-		return str(round(valor,4))
+		return str(truncar_decimales(valor,4))
+		#return str(round(valor,4))
 
 	def kiloEnPesosFinal(self):
 		if(self.cdu_pais=="0010001"):
@@ -212,10 +222,12 @@ class CalculoPrecios(object):
 
 	def kiloEnPesosChina(self):
 		valor =  (Decimal(self.ToneladaEnDolar()) / 1000) + Decimal(self.factor_impuesto_china)
-		return str(round(valor,4))
+		return str(truncar_decimales(valor,4))
+		#return str(round(valor,4))
 
 	def kiloEnPesosEU(self):
 		valor = Decimal(self.kiloEnPeso())
 		
 		valor = valor + Decimal(self.factor_impuesto)
-		return str(round(valor,4))
+		return str(truncar_decimales(valor,4))
+		#return str(round(valor,4))
