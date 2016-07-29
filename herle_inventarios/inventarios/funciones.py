@@ -4,8 +4,12 @@ from catalogo_detalles.models import CatalogoDetalle
 import inspect, itertools 
 
 def truncar_decimales(valor, decimales):
-	valor1 = round(round(float(valor)*(10.0**decimales),10),0)
-	valor2 = (10.0**decimales)
+	decimales_tmp = decimales
+	#if(decimales>4):
+	#	decimales_tmp = decimales_tmp + 1
+	#valor1 = int(float(valor)*(10.0**decimales_tmp))
+	valor1 = round(round(float(valor)*(10.0**decimales_tmp),10),0)
+	valor2 = (10.0**decimales_tmp)
 	return round(valor1 / valor2,decimales)
 
 class Conversor(object):
@@ -200,16 +204,15 @@ class CalculoPrecios(object):
 		if(self.cdu_pais!="0010001"):
 			return '0.0'
 		kilo_dolar = self.kiloEnDolar()
+		kilo_dolar = Decimal(self.precio_libra_centavos) *  Decimal(self.factor)
 		valor = Decimal(kilo_dolar) * Decimal(self.precio_dolar)
-		#valor = truncar_decimales(str(valor),4)
-		if(self.con_comercializadora==True):
-			#porcentaje_com = (1 + Decimal(self.porc_comercializadora)/float(100))
-			#valor = valor * porcentaje_com
-			valor = valor * (1 + Decimal(self.porc_comercializadora)/100)
+		#valor = truncar_decimales(valor,4)
 
-		#import ipdb;ipdb.set_trace()
+		if(self.con_comercializadora==True):
+			porcentaje = (1 + Decimal(self.porc_comercializadora)/100)
+			valor = float(valor) * float(porcentaje)
+
 		return str(truncar_decimales(valor,4))
-		#return str(round(valor,4))
 	
 	def ToneladaEnDolar(self):
 		if(self.cdu_pais!="0010002"):

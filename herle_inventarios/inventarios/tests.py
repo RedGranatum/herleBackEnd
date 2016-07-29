@@ -259,7 +259,7 @@ class InventariosCodigoTest(TestCase):
 		self.assertEqual(inventario1.codigo_producto,'C32R3')
 
 		self.assertEqual(inventario1.valor_kilo_dolar,'0.5952')
-		self.assertEqual(inventario1.valor_kilo_pesos,'11.1607')
+		self.assertEqual(inventario1.valor_kilo_pesos,'11.1610')
 		self.assertEqual(inventario1.valor_tonelada_dolar,'0.0')		
 		self.assertEqual(inventario1.valor_final_kilo_pesos,'13.2907')
 	
