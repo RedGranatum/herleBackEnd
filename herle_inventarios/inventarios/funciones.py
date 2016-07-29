@@ -5,10 +5,10 @@ import inspect, itertools
 
 def truncar_decimales(valor, decimales):
 	decimales_tmp = decimales
-	#if(decimales>4):
-	#	decimales_tmp = decimales_tmp + 1
-	#valor1 = int(float(valor)*(10.0**decimales_tmp))
-	valor1 = round(round(float(valor)*(10.0**decimales_tmp),10),0)
+	if(decimales>4):
+		decimales_tmp = decimales_tmp + 1
+	valor1 = int(float(valor)*(10.0**decimales_tmp))
+	#valor1 = round(round(float(valor)*(10.0**decimales_tmp),10),0)
 	valor2 = (10.0**decimales_tmp)
 	return round(valor1 / valor2,decimales)
 
@@ -203,8 +203,9 @@ class CalculoPrecios(object):
 		# Kilo en peso
 		if(self.cdu_pais!="0010001"):
 			return '0.0'
+		#import ipdb;ipdb.set_trace()
 		kilo_dolar = self.kiloEnDolar()
-		kilo_dolar = Decimal(self.precio_libra_centavos) *  Decimal(self.factor)
+		#kilo_dolar = Decimal(self.precio_libra_centavos) *  Decimal(self.factor)
 		valor = Decimal(kilo_dolar) * Decimal(self.precio_dolar)
 		#valor = truncar_decimales(valor,4)
 
