@@ -162,7 +162,7 @@ class InventariosCodigoTest(TestCase):
 
 		dicValores = {'cdu_pais':'0010001','precio_tonelada_dolar':'0','factor_impuesto_china':'0','con_comercializadora':True,'precio_libra_centavos':'0.25',
 					'factor':'2.2045', 'precio_dolar':'18.32', 'factor_impuesto':'1.85', 'porc_comercializadora':'3.0',
-					'esperado_kilo_en_dolar':'0.5511','esperado_kilo_en_pesos':'10.1264','esperado_tonelada_en_dolar':'0.0','esperado_kilo_en_pesos_final': '11.9764'}
+					'esperado_kilo_en_dolar':'0.5511','esperado_kilo_en_pesos':'10.399','esperado_tonelada_en_dolar':'0.0','esperado_kilo_en_pesos_final': '12.249'}
 		self.probarCalculos(dicValores)
 
 	def test_calculo_china(self):
@@ -259,9 +259,9 @@ class InventariosCodigoTest(TestCase):
 		self.assertEqual(inventario1.codigo_producto,'C32R3')
 
 		self.assertEqual(inventario1.valor_kilo_dolar,'0.5952')
-		self.assertEqual(inventario1.valor_kilo_pesos,'10.7744')
+		self.assertEqual(inventario1.valor_kilo_pesos,'11.1607')
 		self.assertEqual(inventario1.valor_tonelada_dolar,'0.0')		
-		self.assertEqual(inventario1.valor_final_kilo_pesos,'12.9044')
+		self.assertEqual(inventario1.valor_final_kilo_pesos,'13.2907')
 	
 	def test_serializer_inventarios(self):
 		response = self.client.get('/inventarios/', format='json')
@@ -320,9 +320,9 @@ class InventariosCodigoTest(TestCase):
 		self.assertEqual(response.data["codigo_producto"],"C32R3")
 
 		self.assertEqual(response.data["valor_kilo_dolar"],"0.5952")
-		self.assertEqual(response.data["valor_kilo_pesos"],"10.7744")
+		self.assertEqual(response.data["valor_kilo_pesos"],"11.1607")
 		self.assertEqual(response.data["valor_tonelada_dolar"],"0.0000")
-		self.assertEqual(response.data["valor_final_kilo_pesos"],"12.9044")
+		self.assertEqual(response.data["valor_final_kilo_pesos"],"13.2907")
 
 		response = self.client.get('/compras_detalles/1/', format='json')
 		self.assertEqual(response.data['validado'],True)

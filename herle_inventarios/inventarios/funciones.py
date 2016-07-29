@@ -192,8 +192,8 @@ class CalculoPrecios(object):
 		if(self.cdu_pais!="0010001"):
 			return '0.0'
 		valor = Decimal(self.precio_libra_centavos) *  Decimal(self.factor)
+		#return str(round(valor,6))
 		return str(truncar_decimales(valor,4))
-		#return str(round(valor,4))
 
 	def kiloEnPeso(self):
 		# Kilo en peso
@@ -201,8 +201,13 @@ class CalculoPrecios(object):
 			return '0.0'
 		kilo_dolar = self.kiloEnDolar()
 		valor = Decimal(kilo_dolar) * Decimal(self.precio_dolar)
+		#valor = truncar_decimales(str(valor),4)
 		if(self.con_comercializadora==True):
-			valor = valor * (1 + Decimal(self.porc_comercializadora)/1000)
+			#porcentaje_com = (1 + Decimal(self.porc_comercializadora)/float(100))
+			#valor = valor * porcentaje_com
+			valor = valor * (1 + Decimal(self.porc_comercializadora)/100)
+
+		#import ipdb;ipdb.set_trace()
 		return str(truncar_decimales(valor,4))
 		#return str(round(valor,4))
 	
