@@ -84,10 +84,11 @@ class CostosPorNumRollo(APIView):
 		columnas ="""
 			select  row_number() over() as id,inv.id as inventario_id,inv.codigo_producto,inv.num_rollo,inv.compra_detalle_id,
 			inv.peso_lb ,inv.peso_kg as compra_peso_kg,inv.valor_final_kilo_pesos as precio_kg_compra,
-			comprac.invoice,comprac.proveedor_id,comprac.fec_real as fec_compra,
+			comprac.invoice,comprac.proveedor_id,
+			to_char(comprac.fec_real, 'DD-MM-YYYY') as fec_compra,
 			proveedor.codigo as codigo_proveedor,proveedor.nombre as nombre_proveedor,ventad.peso_kg as venta_peso_kg,
 			ventad.precio_neto as precio_kg_venta,ventad.venta_id,
-			ventac.fec_venta,ventac.num_documento,ventac.bln_activa,ventac.cliente_id,
+			to_char(ventac.fec_venta, 'DD-MM-YYYY') as fec_venta,ventac.num_documento,ventac.bln_activa,ventac.cliente_id,
 			cliente.codigo as codigo_cliente,cliente.nombre as nombre_cliente, 
 			(ventad.peso_kg * inv.valor_final_kilo_pesos) as precio_neto_compra,
 			(ventad.peso_kg * ventad.precio_neto) as precio_neto_venta,

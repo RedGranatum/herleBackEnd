@@ -166,8 +166,8 @@ class CompraConDetallesInventarioConsulta(APIView):
 
 
 		columnas_compra =  """
-				select compra.id as id_compra,  compra.invoice,  to_char( compra.fec_solicitud, 'DD-MM-YYYY') as fec_solicitud,   compra.fec_aduana,   compra.fec_inventario, 
-				compra.fec_real, compra.bln_activa,compra.proveedor_id,prove.codigo as proveedor_codigo,prove.nombre as proveedor_nombre,
+				select compra.id as id_compra,  compra.invoice,  to_char( compra.fec_solicitud, 'DD-MM-YYYY') as fec_solicitud,  to_char( compra.fec_aduana, 'DD-MM-YYYY') as fec_aduana,  
+				to_char( compra.fec_inventario, 'DD-MM-YYYY') as fec_inventario, to_char( compra.fec_real, 'DD-MM-YYYY') as fec_real, compra.bln_activa,compra.proveedor_id,prove.codigo as proveedor_codigo,prove.nombre as proveedor_nombre,
 				prove.pais_id as proveedor_pais_id,cpais.descripcion1 as proveedor_pais, 
 						   """
 		columnas_detalle = """ 
