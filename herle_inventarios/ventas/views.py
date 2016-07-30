@@ -117,11 +117,12 @@ class CostosPorNumRollo(APIView):
 		orden =" order by inv.num_rollo,ventac.id"
 		
 		condicion_por_num_rollo = """
-					where lower(inv.num_rollo) = LOWER( %s)
+					where lower(inv.num_rollo) like lower( %s)
 				"""
 		if(num_rollo != ""):
 			condicion = condicion_por_num_rollo
 			consulta = columnas + condicion + orden
+			num_rollo = '%' + num_rollo + '%'
 			cursor.execute(consulta,[num_rollo])
 			resultado = self.dictfetchall(cursor)
 			return  Response(data=resultado, status=status.HTTP_201_CREATED)

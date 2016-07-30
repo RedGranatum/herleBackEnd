@@ -20,17 +20,45 @@ class ExistenciaRollo(APIView):
 
 class ExistenciaAgrupada(APIView):
 	def get(self ,request):
+
+		producto = ''
+		num_rollo = ''
+
+		if 'producto' in request.GET:
+			producto = request.GET['producto']
+
+		if 'num_rollo' in request.GET:
+			num_rollo = request.GET['num_rollo']
+	
 		cursor = connection.cursor()
 
-		consulta ="""
+		columnas ="""
 			select exist.num_rollo as id, exist.num_rollo,inv.codigo_producto,inv.calibre,inv.ancho,
 			sum(exist.entrada_kg) as entradas_kg,sum(exist.salida_kg) as salidas_kg,
 			sum(exist.entrada_kg) - sum(exist.salida_kg) as existencia_kg
 			from existencias_existencia as exist
 			join inventarios_inventario as inv on exist.num_rollo = inv.num_rollo
-			group by exist.num_rollo,inv.codigo_producto,inv.calibre,inv.ancho
 			"""
-		cursor.execute(consulta)
+		condicion_por_num_rollo = "where lower(exist.num_rollo) like lower(%s)"	
+		
+		condicion_por_producto = "where lower(inv.codigo_producto) like lower(%s)"	
+
+		agrupado ="group by exist.num_rollo,inv.codigo_producto,inv.calibre,inv.ancho"
+
+		condicion =""
+		valor_busqueda =""
+
+		if(num_rollo != ""):
+			valor_busqueda = '%' + num_rollo + '%'
+			condicion = condicion_por_num_rollo
+		
+		if(producto != ""):
+			valor_busqueda = '%' + producto + '%'
+			condicion = condicion_por_producto
+
+		consulta = columnas + condicion + agrupado
+
+		cursor.execute(consulta,[valor_busqueda])
 		#resultado= cursor.fetchall()
 		resultado = self.dictfetchall(cursor)
 		#resultado = Existencia.objects.values('num_rollo').annotate(entradas_kd=Sum('entrada_kg'),salidas_kg=Sum('salida_kg'),existencia_kg=Sum('entrada_kg')-Sum('salida_kg'))
