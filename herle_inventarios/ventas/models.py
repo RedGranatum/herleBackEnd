@@ -1,6 +1,7 @@
 from django.db import models
 from clientes.models import Cliente
 from catalogo_detalles.models import CatalogoDetalle
+#from ventas_detalles.models import VentaDetalle
 
 class Venta(models.Model):
 	fec_venta 	   = models.DateField(default='1900-01-01')
@@ -14,6 +15,8 @@ class Venta(models.Model):
 	periodo_pago   = models.ForeignKey(CatalogoDetalle,to_field='cdu_catalogo',default='',related_name='periodoPago_venta',limit_choices_to={'catalogos': 12}, on_delete=models.PROTECT)
 	cantidad_pago  = models.IntegerField(default=0,help_text="")
 	observaciones  = models.CharField(max_length=100,default="",blank=True)
-	
+	fec_cancelacion = models.DateField(default='1900-01-01')
+
+
 	def __str__(self):
-		return self.num_documento
+		return str(self.id) + '-' + self.num_documento

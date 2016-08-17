@@ -9,7 +9,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db import connection
 from ventas.models import Venta
+from ventas_detalles.models import VentaDetalle
+from existencias.models import Existencia
 from ventas.serializers import VentaSerializer,VentaConDetalleNuevaSerializer,VentaConDetalleSerializer
+
 class VentaConDetallesMixin(object):
 	queryset = Venta.objects.all()
 	#queryset =Compra.objects.select_related()
@@ -65,6 +68,51 @@ class VentaConDetallesLista(APIView):
 				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)
 		return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class VentasIndividual(APIView):
+
+	def get_object(self, pk):
+		try:
+			return Venta.objects.get(pk=pk)
+		except Venta.DoesNotExist:
+			raise Http404
+
+
+	def get(self, request, pk=None, format=None):
+		if(pk!=None):
+			venta = self.get_object(pk)
+			serializer = VentaSerializer(venta)
+			return Response(serializer.data)
+		
+		queryset = Venta.objects.all()
+		serializer_class = VentaSerializer(queryset,many=True)
+		return  Response(serializer_class.data)
+
+	@transaction.atomic	
+	def put(self, request, pk=None,format=None):
+		venta = self.get_object(pk)
+		if(venta.bln_activa==False):
+			request.data['bln_activa']=False
+
+		serializer = VentaSerializer(venta, data =request.data)
+		if serializer.is_valid():
+			try:
+				actual_activa = venta.bln_activa
+				serializer.save()	
+				venta_detalles = VentaDetalle.objects.filter(venta = pk)
+				# Si se va a cancelar una venta que esta activa
+				if(actual_activa==True and request.data['bln_activa']==False):
+					for detalle in venta_detalles:
+						nueva_existencia = Existencia(num_rollo=detalle.num_rollo ,entrada_kg=0.0, salida_kg=(detalle.peso_kg*-1), id_operacion=detalle.id , operacion='can.venta')
+						nueva_existencia.save()
+
+				return Response(serializer.data, status=status.HTTP_201_CREATED)
+			except IntegrityError as ex:
+				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)
+			except Exception as ex:
+				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)
+		return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class VentaFiltrosMixin(object):
 	model = Venta
 	serializer_class = VentaSerializer
@@ -86,22 +134,29 @@ class CostosPorNumRollo(APIView):
 			inv.peso_lb ,inv.peso_kg as compra_peso_kg,inv.valor_final_kilo_pesos as precio_kg_compra,
 			comprac.invoice,comprac.proveedor_id,
 			to_char(comprac.fec_real, 'DD-MM-YYYY') as fec_compra,
-			proveedor.codigo as codigo_proveedor,proveedor.nombre as nombre_proveedor,ventad.peso_kg as venta_peso_kg,
-			ventad.precio_neto as precio_kg_venta,ventad.venta_id,
-			to_char(ventac.fec_venta, 'DD-MM-YYYY') as fec_venta,ventac.num_documento,ventac.bln_activa,ventac.cliente_id,
+			proveedor.codigo as codigo_proveedor,proveedor.nombre as nombre_proveedor,ventadc.peso_kg as venta_peso_kg,
+			ventadc.precio_neto as precio_kg_venta,ventadc.venta_id,
+			to_char(ventadc.fec_venta, 'DD-MM-YYYY') as fec_venta,ventadc.num_documento,ventadc.bln_activa,ventadc.cliente_id,
 			cliente.codigo as codigo_cliente,cliente.nombre as nombre_cliente, 
-			(ventad.peso_kg * inv.valor_final_kilo_pesos) as precio_neto_compra,
-			(ventad.peso_kg * ventad.precio_neto) as precio_neto_venta,
-			(ventad.peso_kg * ventad.precio_neto) - (ventad.peso_kg * inv.valor_final_kilo_pesos) as utilidad
+			(ventadc.peso_kg * inv.valor_final_kilo_pesos) as precio_neto_compra,
+			(ventadc.peso_kg * ventadc.precio_neto) as precio_neto_venta,
+			(ventadc.peso_kg * ventadc.precio_neto) - (ventadc.peso_kg * inv.valor_final_kilo_pesos) as utilidad
 			,exist.salidas_kg as total_salida_kg, exist.existencia_kg
 			, (exist.existencia_kg * inv.valor_final_kilo_pesos) as costo_inventario
 			from inventarios_inventario as inv 
 			join compras_detalles_compradetalle as comprad on inv.compra_detalle_id = comprad.id
 			join compras_compra as comprac on comprac.id = comprad.compra_id
 			join proveedores_proveedor as proveedor on proveedor.id = comprac.proveedor_id
-			left join ventas_detalles_ventadetalle  as ventad on ventad.num_rollo = inv.num_rollo
-			left join ventas_venta as ventac on ventad.venta_id = ventac.id
-			left join clientes_cliente as cliente  on cliente.id = ventac.cliente_id
+			left join (
+				select ventac.id,ventad.peso_kg,ventad.precio_neto,ventad.venta_id,ventac.fec_venta,ventac.num_documento,
+				ventac.bln_activa,ventac.cliente_id,ventad.num_rollo
+				from ventas_venta as ventac 
+				left join ventas_detalles_ventadetalle as ventad 
+				on ventac.id = ventad.venta_id 
+				where ventac.bln_activa=true
+				) as ventadc on ventadc.num_rollo  = inv.num_rollo
+			
+			left join clientes_cliente as cliente  on cliente.id = ventadc.cliente_id
 			left join (
 				select  exist.num_rollo,
 				sum(exist.entrada_kg) as entradas_kg,sum(exist.salida_kg) as salidas_kg,
@@ -110,11 +165,10 @@ class CostosPorNumRollo(APIView):
 				group by exist.num_rollo
 				) exist
 				on exist.num_rollo = inv.num_rollo
-			
 			"""
 		condicion = ""
 
-		orden =" order by inv.num_rollo,ventac.id"
+		orden =" order by inv.num_rollo,ventadc.id"
 		
 		condicion_por_num_rollo = """
 					where lower(inv.num_rollo) like lower( %s)
