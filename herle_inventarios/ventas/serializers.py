@@ -8,6 +8,10 @@ from ventas_detalles.serializers import VentaDetalleSerializer
 from clientes.serializers import ClienteSerializer
 
 class VentaSerializer(serializers.ModelSerializer):
+		fec_venta = serializers.DateTimeField(format='%d/%m/%Y',input_formats=['%d/%m/%Y'])
+		fec_inventario = serializers.DateTimeField(format='%d/%m/%Y',input_formats=['%d/%m/%Y'])
+		fec_cancelacion = serializers.DateTimeField(format='%d/%m/%Y',input_formats=['%d/%m/%Y'])
+
 		class Meta:
 			model = Venta
 			fields = ('id','fec_venta','tipo_doc','num_documento','bln_activa','fec_inventario','cliente','metodo_pago','banco_cliente','periodo_pago','cantidad_pago','observaciones','fec_cancelacion')

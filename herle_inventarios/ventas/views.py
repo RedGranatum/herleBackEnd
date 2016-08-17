@@ -90,22 +90,26 @@ class VentasIndividual(APIView):
 	@transaction.atomic	
 	def put(self, request, pk=None,format=None):
 		venta = self.get_object(pk)
+		formatmx = "%d/%m/%Y"
 		if(venta.bln_activa==False):
-			request.data['bln_activa']=False
+			request.data['bln_activa']='false'
+			request.data['fec_cancelacion']=venta.fec_cancelacion.strftime(formatmx)
 
 		serializer = VentaSerializer(venta, data =request.data)
 		if serializer.is_valid():
 			try:
 				actual_activa = venta.bln_activa
-				serializer.save()	
+				response = serializer.save()	
 				venta_detalles = VentaDetalle.objects.filter(venta = pk)
 				# Si se va a cancelar una venta que esta activa
-				if(actual_activa==True and request.data['bln_activa']==False):
+				if(actual_activa==True and request.data['bln_activa']=='false'):
 					for detalle in venta_detalles:
 						nueva_existencia = Existencia(num_rollo=detalle.num_rollo ,entrada_kg=0.0, salida_kg=(detalle.peso_kg*-1), id_operacion=detalle.id , operacion='can.venta')
 						nueva_existencia.save()
 
-				return Response(serializer.data, status=status.HTTP_201_CREATED)
+			
+				datos = VentaConDetalleSerializer(response)	
+				return Response(datos.data, status=status.HTTP_201_CREATED)
 			except IntegrityError as ex:
 				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)
 			except Exception as ex:
