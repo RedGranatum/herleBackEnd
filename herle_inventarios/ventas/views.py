@@ -11,7 +11,9 @@ from django.db import connection
 from ventas.models import Venta
 from ventas_detalles.models import VentaDetalle
 from existencias.models import Existencia
+from catalogo_detalles.models import CatalogoDetalle
 from ventas.serializers import VentaSerializer,VentaConDetalleNuevaSerializer,VentaConDetalleSerializer
+import datetime
 
 class VentaConDetallesMixin(object):
 	queryset = Venta.objects.all()
@@ -54,12 +56,19 @@ class VentaConDetallesLista(APIView):
 		serializer_class = VentaConDetalleNuevaSerializer(queryset,many=True)
 		return  Response(serializer_class.data)
 
-	@transaction.atomic	
 	def post(self, request, format=None):
+		cat=CatalogoDetalle.objects.get(cdu_catalogo = request.data["empresa"])
+		cat.monto1 = cat.monto1 + 1
+		siguiente = str(int(cat.monto1))  + cat.descripcion1[0:1]
+		request.data["num_documento"] = siguiente
+
 		serializer_class = VentaConDetalleNuevaSerializer(data=request.data)
+
 		if serializer_class.is_valid():
 			try:
-				response = serializer_class.save()
+				with transaction.atomic():
+					response = serializer_class.save()
+					cat.save()
 				datos = VentaConDetalleSerializer(response)		
 				return Response(datos.data, status=status.HTTP_201_CREATED)
 			except IntegrityError as ex:
@@ -200,4 +209,77 @@ class CostosPorNumRollo(APIView):
 			for row in cursor.fetchall()
 		]
 
+class VentasConDetallesInventarioConsulta(APIView):
+	def dictfetchall(self,cursor):
+		"Return all rows from a cursor as a dict"
+		columns = [col[0] for col in cursor.description]
+		return [
+			dict(zip(columns, row))
+			for row in cursor.fetchall()
+		]
 
+	def get(self ,request):
+		num_documento = request.GET['num_documento']
+
+		formatmx = "%d/%m/%Y"
+		formateu = "%Y%m%d"
+		fec_inicial = datetime.datetime.strptime(request.GET['fec_inicial'], formatmx).strftime(formateu)
+		fec_final   = datetime.datetime.strptime(request.GET['fec_final'], formatmx).strftime(formateu)
+		
+		cursor = connection.cursor()
+
+
+		columnas_venta =  """
+				select  ventac.id,ventac.num_documento,ventac.cliente_id,to_char(ventac.fec_venta, 'DD-MM-YYYY') as fec_venta,ventac.bln_activa,
+						clie.nombre as cliente,clie.codigo as cliente_codigo,suma_venta.venta_neta,
+						"""
+
+		columnas_detalle = """ 				
+				ventad.id as id,ventad.id as id_detalle,ventad.venta_id,ventad.num_rollo,ventad.peso_kg,ventad.precio_neto,
+						""" 
+
+		columnas_inventario = """ 
+				inv.id as inventario_id,inv.codigo_producto as inventario_codigo_producto,
+				inv.peso_lb as inventario_peso_lb ,inv.peso_kg as inventario_peso_kg,
+				inv.valor_final_kilo_pesos as inventario_precio_kg_compra
+					"""
+		
+		union =""" 
+				from ventas_venta as ventac 
+				left join ventas_detalles_ventadetalle as ventad 
+				on ventac.id = ventad.venta_id
+			    join clientes_cliente as clie on clie.id = ventac.cliente_id
+			    left join inventarios_inventario as inv 
+				on ventad.num_rollo  = inv.num_rollo 
+				left join(
+				  select venta_id, sum((peso_kg) * (precio_neto)) as venta_neta
+ 				  from ventas_detalles_ventadetalle
+				  group by venta_id
+				  ) as suma_venta
+				  on suma_venta.venta_id = ventac.id
+				"""
+		condicion_ventas_fecha = """
+				where ventac.bln_activa=true and ventac.fec_venta >= %s and ventac.fec_venta <=%s
+				order by ventac.id,ventad.id
+				"""
+
+		condicion_ventas_documento = """
+					where ventac.bln_activa=true and  lower(ventac.num_documento) = LOWER( %s)
+					order by ventac.id,ventad.id
+				"""
+		
+
+		condicion = condicion_ventas_fecha
+
+		if(num_documento != ""):
+			condicion = condicion_ventas_documento
+			consulta = columnas_venta + columnas_detalle + columnas_inventario + union + condicion
+			cursor.execute(consulta,[num_documento])
+			resultado = self.dictfetchall(cursor)
+			return  Response(data=resultado, status=status.HTTP_201_CREATED)
+
+		consulta = columnas_venta + columnas_detalle + columnas_inventario + union + condicion
+
+		cursor.execute(consulta,[fec_inicial,fec_final])
+		resultado = self.dictfetchall(cursor)
+		return  Response(data=resultado, status=status.HTTP_201_CREATED)

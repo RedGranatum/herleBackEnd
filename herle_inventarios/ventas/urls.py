@@ -8,5 +8,5 @@ urlpatterns =[
 	url(r'^ventas/(?P<pk>[0-9]+)/detalles/$', views.VentasConDetallesIndividual.as_view(),name='ventas_detalles_individual'), 
     url(r'^ventas/buscar/(?P<valor_buscado>[A-Za-z0-9\s]+)/$', views.VentaBusqueda.as_view(),name='ventas_busqueda'), 
     url(r'^costos/agrupado/$', views.CostosPorNumRollo.as_view(),name="costos_agrupado"),
- 
+    url(r'^ventas/consultas/$', views.VentasConDetallesInventarioConsulta.as_view(),name="ventas_consultas"),
 ]	

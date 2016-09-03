@@ -14,7 +14,7 @@ class VentaSerializer(serializers.ModelSerializer):
 
 		class Meta:
 			model = Venta
-			fields = ('id','fec_venta','tipo_doc','num_documento','bln_activa','fec_inventario','cliente','metodo_pago','banco_cliente','periodo_pago','cantidad_pago','observaciones','fec_cancelacion')
+			fields = ('id','empresa','fec_venta','tipo_doc','num_documento','bln_activa','fec_inventario','cliente','metodo_pago','banco_cliente','periodo_pago','cantidad_pago','observaciones','fec_cancelacion')
 
 class VentaConDetalleNuevaSerializer(serializers.ModelSerializer):
 	fec_venta = serializers.DateTimeField(format='%d/%m/%Y',input_formats=['%d/%m/%Y'])
@@ -26,7 +26,7 @@ class VentaConDetalleNuevaSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Venta
-		fields = ('id','fec_venta','tipo_doc','num_documento','bln_activa','fec_inventario','cliente','metodo_pago','banco_cliente','periodo_pago','cantidad_pago','observaciones','venta_detalles','fec_cancelacion')
+		fields = ('id','empresa','fec_venta','tipo_doc','num_documento','bln_activa','fec_inventario','cliente','metodo_pago','banco_cliente','periodo_pago','cantidad_pago','observaciones','venta_detalles','fec_cancelacion')
 
 	def create(self, validated_data):
 		venta_detalles_datos = validated_data.pop('venta_detalles')
@@ -55,4 +55,4 @@ class VentaConDetalleSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Venta
-		fields = ('id','fec_venta','tipo_doc','num_documento','bln_activa','fec_inventario','cliente','metodo_pago','banco_cliente','periodo_pago','cantidad_pago','observaciones','venta_detalles','fec_cancelacion')
+		fields = ('id','empresa','fec_venta','tipo_doc','num_documento','bln_activa','fec_inventario','cliente','metodo_pago','banco_cliente','periodo_pago','cantidad_pago','observaciones','venta_detalles','fec_cancelacion')
