@@ -20,6 +20,7 @@ from rest_framework.authtoken import views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api-token-auth/', views.obtain_auth_token),
+    url(r'^', include('permisos.urls')),
     url(r'^', include('catalogos.urls')),
     url(r'^', include('catalogo_detalles.urls')),
     url(r'^', include('proveedores.urls')),
