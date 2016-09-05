@@ -40,7 +40,6 @@ class CompraConDetalleSerializer(serializers.ModelSerializer):
 				'transporte','bln_activa','descripcion','comentarios','compra_detalles')
 
 	def create(self, validated_data):
-		#import ipdb;ipdb.set_trace()
 		#validated_data['proveedor_id']=1
 		compra_detalles_datos = validated_data.pop('compra_detalles')
 		compra = Compra.objects.create(**validated_data)

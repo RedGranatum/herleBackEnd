@@ -16,9 +16,7 @@ class CatalogoDetalleMasivo(APIView):
 				serializer.save()
 				return Response(serializer.data, status=status.HTTP_201_CREATED)
 			except IntegrityError as e:
-				import ipdb;ipdb.set_trace()
 				return Response({"La clave de la empresa ya existe"}, status=status.HTTP_403_FORBIDDEN)
-		import ipdb;ipdb.set_trace()
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
