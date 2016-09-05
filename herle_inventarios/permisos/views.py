@@ -29,7 +29,7 @@ class PermisoAdministrador(APIView):
 
 		result = request.user and request.user.groups.filter(name=self.GRUPO_REVISOR)
 		if result.count()>0:
-			MENU_PERMISOS.append("costos")
+			MENU_PERMISOS.append("reportes")
 			return MENU_PERMISOS
 
 		return MENU_PERMISOS
