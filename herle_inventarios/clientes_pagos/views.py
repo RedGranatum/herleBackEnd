@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.generics import ListCreateAPIView
 from django.db.models import Sum
 from django.db import IntegrityError
+from django.db import connection
 from .models import ClientesPago,ClientesPagoConsultas
 from .serializers import ClientesPagoSerializer
 
@@ -57,3 +58,82 @@ class SaldoAgrupadoPorVentasConAdeudo(APIView):
 		resultado = ClientesPago.objects.values('ventas','ventas__num_documento').annotate(cargo_suma=Sum('cargo'),abono_suma=Sum('abono'),saldo=Sum('cargo')-Sum('abono')).filter(saldo__gt=0)
 		return  Response(data=resultado, status=status.HTTP_201_CREATED)
 
+
+class ReporteCalendarioPagos(APIView):
+	def dictfetchall(self,cursor):
+		"Return all rows from a cursor as a dict"
+		columns = [col[0] for col in cursor.description]
+		return [
+			dict(zip(columns, row))
+			for row in cursor.fetchall()
+		]
+
+	def get(self ,request):		
+		cursor = connection.cursor()
+		con_saldos = ConsultaSaldos("Detallado")
+
+		consulta = con_saldos.consulta
+		cursor.execute(consulta)		
+		resultado = self.dictfetchall(cursor)
+		return  Response(data=resultado, status=status.HTTP_201_CREATED)
+
+class ReporteAcumuladoCalendarioPagos(APIView):
+	def dictfetchall(self,cursor):
+		"Return all rows from a cursor as a dict"
+		columns = [col[0] for col in cursor.description]
+		return [
+			dict(zip(columns, row))
+			for row in cursor.fetchall()
+		]
+
+	def get(self ,request):		
+		cursor = connection.cursor()
+		con_saldos = ConsultaSaldos("Acumulado")
+
+		consulta = con_saldos.consulta
+		cursor.execute(consulta)		
+		resultado = self.dictfetchall(cursor)
+		return  Response(data=resultado, status=status.HTTP_201_CREATED)
+
+
+class ConsultaSaldos(object):
+	def __init__(self,tipo_reporte):
+		self.tipo_reporte=tipo_reporte
+		self.consulta = ""
+
+		columnas_venta =  """
+			select  ventac.id,ventac.num_documento,ventac.cliente_id,
+        	to_char(ventac.fec_venta, 'DD-MM-YYYY') as fec_venta,ventac.cantidad_pago as dias, 
+        	to_char(fec_venta +  ventac.cantidad_pago, 'DD-MM-YYYY')  fec_vencimiento,
+         	now()::date>= fec_venta +  ventac.cantidad_pago as vencido,
+        	ventac.bln_activa,clie.nombre as cliente,clie.codigo as cliente_codigo,
+			saldo.cargo,saldo.abono,saldo.saldo,
+			CASE WHEN now()::date= (fec_venta +  ventac.cantidad_pago) THEN 'Para hoy'
+	             WHEN now()::date> (fec_venta +  ventac.cantidad_pago) THEN 'Vencido'
+	             ELSE 'Por Vencer' END as Estatus
+			"""
+		columnas_total ="select count(ventac.id) as total"	
+		
+		union =""" 
+			from ventas_venta as ventac 
+			join clientes_cliente as clie on clie.id = ventac.cliente_id
+			join(	
+			select ventas_id,sum(cargo) as cargo,sum(abono) as abono,sum(cargo) - sum(abono) as saldo
+			from clientes_pagos_clientespago 
+			group by ventas_id
+			having sum(cargo) - sum(abono)>0
+			) as saldo on saldo.ventas_id = ventac.id
+				"""
+
+		condicion_ventas = """
+			where ventac.bln_activa=true and saldo.saldo>0 
+			order by (fec_venta +  ventac.cantidad_pago)
+				"""
+		condicion_total = """
+			where ventac.bln_activa=true and saldo.saldo>0 
+			and now()::date >= fec_venta +  ventac.cantidad_pago 
+			"""
+		if(self.tipo_reporte == "Detallado"):
+			self.consulta = columnas_venta + union + condicion_ventas
+		if(self.tipo_reporte == "Acumulado"):
+			self.consulta = columnas_total + union + condicion_total

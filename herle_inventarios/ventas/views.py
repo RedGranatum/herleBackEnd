@@ -12,6 +12,7 @@ from ventas.models import Venta
 from ventas_detalles.models import VentaDetalle
 from existencias.models import Existencia
 from catalogo_detalles.models import CatalogoDetalle
+from clientes_pagos.models import ClientesPago
 from ventas.serializers import VentaSerializer,VentaConDetalleNuevaSerializer,VentaConDetalleSerializer
 import datetime
 
@@ -107,14 +108,24 @@ class VentasIndividual(APIView):
 		serializer = VentaSerializer(venta, data =request.data)
 		if serializer.is_valid():
 			try:
-				actual_activa = venta.bln_activa
-				response = serializer.save()	
-				venta_detalles = VentaDetalle.objects.filter(venta = pk)
-				# Si se va a cancelar una venta que esta activa
-				if(actual_activa==True and request.data['bln_activa']=='false'):
-					for detalle in venta_detalles:
-						nueva_existencia = Existencia(num_rollo=detalle.num_rollo ,entrada_kg=0.0, salida_kg=(detalle.peso_kg*-1), id_operacion=detalle.id , operacion='can.venta')
-						nueva_existencia.save()
+				with transaction.atomic():
+					actual_activa = venta.bln_activa
+					response = serializer.save()	
+					venta_detalles = VentaDetalle.objects.filter(venta = pk)
+					# Si se va a cancelar una venta que esta activa
+					if(actual_activa==True and request.data['bln_activa']=='false'):
+						for detalle in venta_detalles:
+							nueva_existencia = Existencia(num_rollo=detalle.num_rollo ,entrada_kg=0.0, salida_kg=(detalle.peso_kg*-1), id_operacion=detalle.id , operacion='can.venta')
+							nueva_existencia.save()
+
+						saldo = ClientesPago.objects.get(ventas = venta.id)
+						cliente_pago = ClientesPago()
+						cliente_pago.ventas = venta
+						cliente_pago.fecha = venta.fec_venta
+						cliente_pago.cargo = 0.0
+						cliente_pago.abono =  saldo.cargo
+						cliente_pago.observaciones = 'Cancelacion de venta'	
+						cliente_pago.save()
 
 			
 				datos = VentaConDetalleSerializer(response)	
