@@ -278,12 +278,12 @@ class ConsultaFecAduana(object):
 		self.consulta = ""
 
 		columnas_calendario="""
-			select compra.id as id_compra,  compra.invoice,  to_char( compra.fec_solicitud, 'DD-MM-YYYY') as fec_solicitud,  
+			select compra.id as id,compra.id as id_compra,  compra.invoice,  to_char( compra.fec_solicitud, 'DD-MM-YYYY') as fec_solicitud,  
 			to_char( compra.fec_aduana, 'DD-MM-YYYY') as fec_aduana,  
 			to_char( compra.fec_inventario, 'DD-MM-YYYY') as fec_inventario, to_char( compra.fec_real, 'DD-MM-YYYY') as fec_real, 
 			compra.bln_activa,compra.proveedor_id,prove.codigo as proveedor_codigo,prove.nombre as proveedor_nombre,
 			prove.pais_id as proveedor_pais_id,cpais.descripcion1 as proveedor_pais, 
-			CASE WHEN now()::date= compra.fec_aduana THEN 'Para hoy'  WHEN now()::date> compra.fec_aduana THEN 'Demorada' ELSE 'Por llegar' END as Estatus		             
+			CASE WHEN now()::date = compra.fec_aduana::date THEN 'Para hoy'  WHEN now()::date> compra.fec_aduana::date THEN 'Demorada' ELSE 'Por llegar' END as Estatus		             
 		"""
 
 		columnas_total ="select count(compra.id) as total"	
@@ -296,12 +296,12 @@ class ConsultaFecAduana(object):
 		"""
 
 		condicion_calendario = """
-			where   bln_activa=true and compra.fec_aduana='01/01/1900'
+			where   bln_activa=true and compra.fec_real='01/01/1900'
 			order by compra.fec_aduana
 		"""
 
 		condicion_total= """
-			where   bln_activa=true and compra.fec_aduana='01/01/1900'
+			where   bln_activa=true and compra.fec_real='01/01/1900'
 			and now()::date >= compra.fec_aduana 
 		"""
 
@@ -309,6 +309,4 @@ class ConsultaFecAduana(object):
 			self.consulta = columnas_calendario + union + condicion_calendario
 		if(self.tipo_reporte == "Acumulado"):
 			self.consulta = columnas_total + union + condicion_total
-
-
-
+	             
