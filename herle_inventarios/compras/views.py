@@ -168,7 +168,10 @@ class CompraConDetallesInventarioConsulta(APIView):
 		columnas_compra =  """
 				select compra.id as id_compra,  compra.invoice,  to_char( compra.fec_solicitud, 'DD-MM-YYYY') as fec_solicitud,  to_char( compra.fec_aduana, 'DD-MM-YYYY') as fec_aduana,  
 				to_char( compra.fec_inventario, 'DD-MM-YYYY') as fec_inventario, to_char( compra.fec_real, 'DD-MM-YYYY') as fec_real, compra.bln_activa,compra.proveedor_id,prove.codigo as proveedor_codigo,prove.nombre as proveedor_nombre,
-				prove.pais_id as proveedor_pais_id,cpais.descripcion1 as proveedor_pais, 
+				prove.pais_id as proveedor_pais_id,cpais.descripcion1 as proveedor_pais,
+				 CASE WHEN now()::date= compra.fec_aduana THEN 'Para hoy'
+	             WHEN now()::date> compra.fec_aduana THEN 'Demorada'
+	             ELSE 'Por llegar' END as Estatus,
 						   """
 		columnas_detalle = """ 
 				detalle.id as id,detalle.id as detalle_id,   detalle.dsc_material  as detalle_dsc_material,   detalle.calibre  as detalle_calibre,   detalle.ancho  as detalle_ancho,   detalle.largo  as detalle_largo,   detalle.peso_kg  as detalle_peso_kg, 
@@ -210,7 +213,6 @@ class CompraConDetallesInventarioConsulta(APIView):
 					where lower(compra.invoice) = LOWER( %s)
 					order by compra.id,inv.id
 				"""
-		
 
 		condicion = condicion_compras
 
@@ -232,3 +234,81 @@ class CompraConDetallesInventarioConsulta(APIView):
 		resultado = self.dictfetchall(cursor)
 		#resultado = Existencia.objects.values('num_rollo').annotate(entradas_kd=Sum('entrada_kg'),salidas_kg=Sum('salida_kg'),existencia_kg=Sum('entrada_kg')-Sum('salida_kg'))
 		return  Response(data=resultado, status=status.HTTP_201_CREATED)
+
+class ReporteCompraCalendarioAduana(APIView):
+	def dictfetchall(self,cursor):
+		"Return all rows from a cursor as a dict"
+		columns = [col[0] for col in cursor.description]
+		return [
+			dict(zip(columns, row))
+			for row in cursor.fetchall()
+		]
+
+	def get(self ,request):
+		cursor = connection.cursor()
+		con_fecha = ConsultaFecAduana("Detallado")
+
+		consulta = con_fecha.consulta
+		cursor.execute(consulta)		
+		resultado = self.dictfetchall(cursor)
+		return  Response(data=resultado, status=status.HTTP_201_CREATED)
+
+class ReporteAcumuladoCompraCalendarioAduana(APIView):
+	def dictfetchall(self,cursor):
+		"Return all rows from a cursor as a dict"
+		columns = [col[0] for col in cursor.description]
+		return [
+			dict(zip(columns, row))
+			for row in cursor.fetchall()
+		]
+
+	def get(self ,request):
+		cursor = connection.cursor()
+		con_fecha = ConsultaFecAduana("Acumulado")
+
+		consulta = con_fecha.consulta
+		cursor.execute(consulta)		
+		resultado = self.dictfetchall(cursor)
+		return  Response(data=resultado, status=status.HTTP_201_CREATED)
+
+
+class ConsultaFecAduana(object):
+	def __init__(self,tipo_reporte):
+		self.tipo_reporte=tipo_reporte
+		self.consulta = ""
+
+		columnas_calendario="""
+			select compra.id as id_compra,  compra.invoice,  to_char( compra.fec_solicitud, 'DD-MM-YYYY') as fec_solicitud,  
+			to_char( compra.fec_aduana, 'DD-MM-YYYY') as fec_aduana,  
+			to_char( compra.fec_inventario, 'DD-MM-YYYY') as fec_inventario, to_char( compra.fec_real, 'DD-MM-YYYY') as fec_real, 
+			compra.bln_activa,compra.proveedor_id,prove.codigo as proveedor_codigo,prove.nombre as proveedor_nombre,
+			prove.pais_id as proveedor_pais_id,cpais.descripcion1 as proveedor_pais, 
+			CASE WHEN now()::date= compra.fec_aduana THEN 'Para hoy'  WHEN now()::date> compra.fec_aduana THEN 'Demorada' ELSE 'Por llegar' END as Estatus		             
+		"""
+
+		columnas_total ="select count(compra.id) as total"	
+
+
+		union = """
+			from public.compras_compra as compra
+			join proveedores_proveedor as prove on prove.id = compra.proveedor_id
+			join catalogo_detalles_catalogodetalle as cpais on cpais.cdu_catalogo = prove.pais_id
+		"""
+
+		condicion_calendario = """
+			where   bln_activa=true and compra.fec_aduana='01/01/1900'
+			order by compra.fec_aduana
+		"""
+
+		condicion_total= """
+			where   bln_activa=true and compra.fec_aduana='01/01/1900'
+			and now()::date >= compra.fec_aduana 
+		"""
+
+		if(self.tipo_reporte == "Detallado"):
+			self.consulta = columnas_calendario + union + condicion_calendario
+		if(self.tipo_reporte == "Acumulado"):
+			self.consulta = columnas_total + union + condicion_total
+
+
+
