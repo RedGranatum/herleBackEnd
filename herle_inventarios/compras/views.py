@@ -88,7 +88,7 @@ class CompraConDetallesActualizacion(APIView):
 	def put(self, request, pk, format=None):  
 		id = self.get_object(pk)
 		# Si esta activa se cancela y ya se inventario
-		if id.bln_activa==True and request.data['bln_activa']==False and id.fec_real != datetime.date(1900,01,01):
+		if id.bln_activa==True and request.data['bln_activa']==False and id.fec_real != datetime.date(1900,1,1):
 			return Response({"No se puede cancelar una compra que ya fue inventariada"}, status=status.HTTP_403_FORBIDDEN)
 
 		# Si la compra ya fue inventariada no se puede cancelar es decir la fecha real
