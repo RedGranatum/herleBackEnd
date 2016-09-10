@@ -242,7 +242,9 @@ class VentasConDetallesInventarioConsulta(APIView):
 
 		columnas_venta =  """
 				select  ventac.id,ventac.num_documento,ventac.cliente_id,to_char(ventac.fec_venta, 'DD-MM-YYYY') as fec_venta,ventac.bln_activa,
-						clie.nombre as cliente,clie.codigo as cliente_codigo,suma_venta.venta_neta,
+						clie.nombre as cliente,clie.codigo as cliente_codigo,
+						CASE WHEN ventac.bln_activa = true THEN suma_venta.venta_neta ELSE 0 END AS venta_neta,						
+						CASE WHEN ventac.bln_activa = true THEN 'VENTA' ELSE 'CANCELADA' END AS estatus,
 						"""
 
 		columnas_detalle = """ 				
@@ -270,12 +272,12 @@ class VentasConDetallesInventarioConsulta(APIView):
 				  on suma_venta.venta_id = ventac.id
 				"""
 		condicion_ventas_fecha = """
-				where ventac.bln_activa=true and ventac.fec_venta >= %s and ventac.fec_venta <=%s
+				where  ventac.fec_venta >= %s and ventac.fec_venta <=%s
 				order by ventac.id,ventad.id
 				"""
 
 		condicion_ventas_documento = """
-					where ventac.bln_activa=true and  lower(ventac.num_documento) = LOWER( %s)
+					where   lower(ventac.num_documento) = LOWER( %s)
 					order by ventac.id,ventad.id
 				"""
 		

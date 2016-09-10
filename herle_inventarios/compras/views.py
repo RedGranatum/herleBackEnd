@@ -40,7 +40,7 @@ class ComprasNoValidadas(APIView):
 		if(validado == 'true'):
 			inventariado = True
 
-		queryset = Compra.objects.filter(compra_detalles__validado=inventariado).distinct('invoice','fec_solicitud')
+		queryset = Compra.objects.filter(compra_detalles__validado=inventariado,bln_activa=True).distinct('invoice','fec_solicitud')
 		serializer_class = CompraSimpleSerializer(queryset,many=True)
 		return  Response(serializer_class.data)
 
@@ -87,6 +87,13 @@ class CompraConDetallesActualizacion(APIView):
 
 	def put(self, request, pk, format=None):  
 		id = self.get_object(pk)
+		# Si esta activa se cancela y ya se inventario
+		if id.bln_activa==True and request.data['bln_activa']==False and id.fec_real != datetime.date(1900,01,01):
+			return Response({"No se puede cancelar una compra que ya fue inventariada"}, status=status.HTTP_403_FORBIDDEN)
+
+		# Si la compra ya fue inventariada no se puede cancelar es decir la fecha real
+		#if(actual_activa==True and request.data['bln_activa']=='false'):
+
 		serializer_class = CompraConDetalleModificacionSerializer(id,data=request.data)
 		serializer_class.is_valid()
 		if serializer_class.is_valid():
@@ -169,9 +176,11 @@ class CompraConDetallesInventarioConsulta(APIView):
 				select compra.id as id_compra,  compra.invoice,  to_char( compra.fec_solicitud, 'DD-MM-YYYY') as fec_solicitud,  to_char( compra.fec_aduana, 'DD-MM-YYYY') as fec_aduana,  
 				to_char( compra.fec_inventario, 'DD-MM-YYYY') as fec_inventario, to_char( compra.fec_real, 'DD-MM-YYYY') as fec_real, compra.bln_activa,compra.proveedor_id,prove.codigo as proveedor_codigo,prove.nombre as proveedor_nombre,
 				prove.pais_id as proveedor_pais_id,cpais.descripcion1 as proveedor_pais,
-				 CASE WHEN now()::date= compra.fec_aduana THEN 'Para hoy'
+				 CASE 	WHEN compra.bln_activa = false THEN 'Cancelada'
+				 WHEN compra.fec_real>'01/01/1900' THEN 'Inventariada'
+				 WHEN now()::date= compra.fec_aduana THEN 'Para hoy'
 	             WHEN now()::date> compra.fec_aduana THEN 'Demorada'
-	             ELSE 'Por llegar' END as Estatus,
+	             ELSE 'Por llegar' END as estatus,
 						   """
 		columnas_detalle = """ 
 				detalle.id as id,detalle.id as detalle_id,   detalle.dsc_material  as detalle_dsc_material,   detalle.calibre  as detalle_calibre,   detalle.ancho  as detalle_ancho,   detalle.largo  as detalle_largo,   detalle.peso_kg  as detalle_peso_kg, 
