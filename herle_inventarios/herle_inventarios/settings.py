@@ -30,7 +30,7 @@ TEMPLATE_DEBUG = DEBUG
 
 ALLOWED_HOSTS = ['*']
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_ALLOW_ALL = False
 
 # Application definition
 
