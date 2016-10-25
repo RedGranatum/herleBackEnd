@@ -40,7 +40,7 @@ class InventarioLista(APIView):
 				serializer_class.save()
 				return Response(serializer_class.data, status=status.HTTP_201_CREATED)
 			except IntegrityError as ex:
-				return Response({"La clave ya existe"}, status=status.HTTP_403_FORBIDDEN)
+				return Response({"El numero de rollo ya existe"}, status=status.HTTP_403_FORBIDDEN)
 			except ValidationError as ex:
 				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)
 			except ObjectDoesNotExist as ex:
