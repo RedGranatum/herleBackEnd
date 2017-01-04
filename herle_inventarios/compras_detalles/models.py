@@ -12,7 +12,7 @@ class CompraDetalle(models.Model):
 	peso_kg        = models.DecimalField(max_digits=13, decimal_places=5,default=0.00)
 	peso_lb        = models.DecimalField(max_digits=13, decimal_places=5,default=0.00)
 	num_rollo      = models.CharField(max_length=30,default="",blank=True)
-	precio         = models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
+	precio         = models.DecimalField(max_digits=10, decimal_places=4,default=0.00)
 	validado       = models.BooleanField(default=False)
 	def __str__(self):
 		return str(self.id)

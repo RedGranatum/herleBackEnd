@@ -10,7 +10,7 @@ class Compra(models.Model):
 	fec_inventario = models.DateField(default='1900-01-01')
 	fec_real 	   = models.DateField(default='1900-01-01')
 	casa_cambio    = models.CharField(max_length=30,default="",blank=True)
-	precio_dolar   = models.DecimalField(max_digits=5, decimal_places=2,default=0.00)
+	precio_dolar   = models.DecimalField(max_digits=5, decimal_places=4,default=0.00)
 	tipo_moneda    = models.ForeignKey(CatalogoDetalle,to_field='cdu_catalogo',default='',related_name='compra_tipo_moneda',limit_choices_to={'catalogos': 4}, on_delete=models.PROTECT)
 	transporte 	   = models.CharField(max_length=50,default="",blank=True)
 	bln_activa     = models.BooleanField(default=True)
