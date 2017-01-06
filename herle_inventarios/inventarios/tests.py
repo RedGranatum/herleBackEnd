@@ -129,7 +129,7 @@ class InventariosCodigoTest(TestCase):
 		response = self.client.get('/inventarios/codigo_producto/?rango=0.012&cdu_material=0050004&ancho=39&largo=0', format='json')
 		self.assertEqual(response.data,'C30R3.5')
 		
-		response = self.client.get('/inventarios/codigo_producto/?rango=0.008&cdu_material=0040001&ancho=35&largo=0', format='json')
+		response = self.client.get('/inventarios/codigo_producto/?rango=0.008&cdu_mater0.5731ial=0040001&ancho=35&largo=0', format='json')
 		self.assertEqual(response.data,'')
 
 		response = self.client.get('/inventarios/codigo_producto/?rango=0.008&cdu_material=0040001&ancho=35&largo=12', format='json')
@@ -138,14 +138,14 @@ class InventariosCodigoTest(TestCase):
 	def test_calculo_estados_unidos_sin_comercializadora(self):
 		dicValores = {'cdu_pais':'0010001','precio_tonelada_dolar':'58','factor_impuesto_china':'2','con_comercializadora':False,
 					'precio_libra_centavos':'0.25',	'factor':'2.2045', 'precio_dolar':'18.32', 'factor_impuesto':'1.850', 
-					'porc_comercializadora':'35','esperado_kilo_en_dolar':'0.5511','esperado_kilo_en_pesos':'10.0962',
-					'esperado_tonelada_en_dolar':'0.0','esperado_kilo_en_pesos_final': '11.9462'}
+					'porc_comercializadora':'35','esperado_kilo_en_dolar':'0.55112','esperado_kilo_en_pesos':'10.0965',
+					'esperado_tonelada_en_dolar':'0.0','esperado_kilo_en_pesos_final': '11.9465'}
 		self.probarCalculos(dicValores)
 
 
 		dicValores = {'cdu_pais':'0010001','precio_tonelada_dolar':'58','factor_impuesto_china':'2','con_comercializadora':False,'precio_libra_centavos':'0.26',
 					'factor':'2.2045', 'precio_dolar':'17.03', 'factor_impuesto':'1.80', 'porc_comercializadora':'4',
-					'esperado_kilo_en_dolar':'0.5732','esperado_kilo_en_pesos':'9.7616','esperado_tonelada_en_dolar':'0.0','esperado_kilo_en_pesos_final':'11.5616'}
+					'esperado_kilo_en_dolar':'0.57317','esperado_kilo_en_pesos':'9.761','esperado_tonelada_en_dolar':'0.0','esperado_kilo_en_pesos_final':'11.561'}
 		self.probarCalculos(dicValores)
 
 	def test_calculo_estados_unidos_con_comercializadora(self):
@@ -162,7 +162,14 @@ class InventariosCodigoTest(TestCase):
 
 		dicValores = {'cdu_pais':'0010001','precio_tonelada_dolar':'0','factor_impuesto_china':'0','con_comercializadora':True,'precio_libra_centavos':'0.25',
 					'factor':'2.2045', 'precio_dolar':'18.32', 'factor_impuesto':'1.85', 'porc_comercializadora':'3.0',
-					'esperado_kilo_en_dolar':'0.5511','esperado_kilo_en_pesos':'10.399','esperado_tonelada_en_dolar':'0.0','esperado_kilo_en_pesos_final': '12.249'}
+					'esperado_kilo_en_dolar':'0.55112','esperado_kilo_en_pesos':'10.3994','esperado_tonelada_en_dolar':'0.0','esperado_kilo_en_pesos_final': '12.2494'}
+		self.probarCalculos(dicValores)
+
+
+	def test_calculo_estados_unidos_con_comercializadora_ejemplo_real(self):
+		dicValores = {'cdu_pais':'0010001','precio_tonelada_dolar':'0','factor_impuesto_china':'0','con_comercializadora':True,'precio_libra_centavos':'0.355',
+					'factor':'2.2045', 'precio_dolar':'20.6840', 'factor_impuesto':'2', 'porc_comercializadora':'3.5',
+					'esperado_kilo_en_dolar':'0.7826','esperado_kilo_en_pesos':'16.7538','esperado_tonelada_en_dolar':'0.0','esperado_kilo_en_pesos_final': '18.7537'}
 		self.probarCalculos(dicValores)
 
 	def test_calculo_china(self):
@@ -202,10 +209,10 @@ class InventariosCodigoTest(TestCase):
 				"&factor=2.2045&precio_dolar=18.03&factor_impuesto=2.13&porc_comercializadora=4")
 		
 		response = self.client.get(ruta, format='json')
-		self.assertEqual( response.data['kilo_en_dolar'],'0.5952')
-		self.assertEqual( response.data['kilo_en_pesos'],'10.7315')
+		self.assertEqual( response.data['kilo_en_dolar'],'0.59522')
+		self.assertEqual( response.data['kilo_en_pesos'],'10.7318')
 		self.assertEqual( response.data['tonelada_en_dolar'],'0.0')
-		self.assertEqual( response.data['kilo_en_pesos_final'],'12.8615')
+		self.assertEqual( response.data['kilo_en_pesos_final'],'12.8618')
 
 		ruta = ("/inventarios/calculo_precios/?cdu_pais=0010002&precio_tonelada_dolar=58"
 				"&factor_impuesto_china=2&con_comercializadora=False&precio_libra_centavos=0.0"
@@ -258,10 +265,10 @@ class InventariosCodigoTest(TestCase):
 
 		self.assertEqual(inventario1.codigo_producto,'C32R3')
 
-		self.assertEqual(inventario1.valor_kilo_dolar,'0.5952')
-		self.assertEqual(inventario1.valor_kilo_pesos,'11.1610')
+		self.assertEqual(inventario1.valor_kilo_dolar,'0.59522')
+		self.assertEqual(inventario1.valor_kilo_pesos,'11.161')
 		self.assertEqual(inventario1.valor_tonelada_dolar,'0.0')		
-		self.assertEqual(inventario1.valor_final_kilo_pesos,'13.2907')
+		self.assertEqual(inventario1.valor_final_kilo_pesos,'13.291')
 	
 	def test_serializer_inventarios(self):
 		response = self.client.get('/inventarios/', format='json')
@@ -320,9 +327,9 @@ class InventariosCodigoTest(TestCase):
 		self.assertEqual(response.data["codigo_producto"],"C32R3")
 
 		self.assertEqual(response.data["valor_kilo_dolar"],"0.5952")
-		self.assertEqual(response.data["valor_kilo_pesos"],"11.1607")
+		self.assertEqual(response.data["valor_kilo_pesos"],"11.1610")
 		self.assertEqual(response.data["valor_tonelada_dolar"],"0.0000")
-		self.assertEqual(response.data["valor_final_kilo_pesos"],"13.2907")
+		self.assertEqual(response.data["valor_final_kilo_pesos"],"13.2910")
 
 		response = self.client.get('/compras_detalles/1/', format='json')
 		self.assertEqual(response.data['validado'],True)
@@ -336,7 +343,7 @@ class InventariosCodigoTest(TestCase):
 		
 		response = self.client.post('/inventarios/',data, format='json')
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-		self.assertEqual(response.data,  {'error': "['Este detalle de compra ya habia sido validado']"} )
+		self.assertEqual(response.data,  {'error': "[u'Este detalle de compra ya habia sido validado']"} )
 
 		data = {"compra_detalle":"1","invoice_compra":"ASSS","material":"0050004","calibre":"0.008",
 		"ancho":"35","largo":"1","num_rollo":"A123","peso_kg":"132.0","peso_lb":"0.0","transporte":"ESTAFETA",

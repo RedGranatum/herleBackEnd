@@ -197,7 +197,7 @@ class CalculoPrecios(object):
 			return '0.0'
 		valor = Decimal(self.precio_libra_centavos) *  Decimal(self.factor)
 		#return str(round(valor,6))
-		return str(truncar_decimales(valor,4))
+		return str(truncar_decimales(valor,5))
 
 	def kiloEnPeso(self):
 		# Kilo en peso
