@@ -230,7 +230,7 @@ class CalculoPrecios(object):
 		return '0.0'
 
 	def kiloEnPesosChina(self):
-		valor =  (Decimal(self.ToneladaEnDolar()) / 1000) + Decimal(self.factor_impuesto_china)
+		valor =  (Decimal(self.ToneladaEnDolar(8)) / 1000) + Decimal(self.factor_impuesto_china)
 		return str(truncar_decimales(valor,4))
 		#return str(round(valor,4))
 
