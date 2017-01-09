@@ -5,7 +5,7 @@ import inspect, itertools
 
 def truncar_decimales(valor, decimales):
 	decimales_tmp = decimales
-	if(decimales>4):
+	if(decimales==5):
 		decimales_tmp = decimales_tmp + 1
 	valor1 = int(float(valor)*(10.0**decimales_tmp))
 	#valor1 = round(round(float(valor)*(10.0**decimales_tmp),10),0)
@@ -192,19 +192,19 @@ class CalculoPrecios(object):
 		except:
 			return False
 
-	def kiloEnDolar(self):
+	def kiloEnDolar(self,decimales=4):
 		if(self.cdu_pais!="0010001"):
 			return '0.0'
 		valor = Decimal(self.precio_libra_centavos) *  Decimal(self.factor)
 		#return str(round(valor,6))
-		return str(truncar_decimales(valor,5))
+		return str(truncar_decimales(valor,decimales))
 
-	def kiloEnPeso(self):
-		# Kilo en peso
+	def kiloEnPeso(self,decimales=4):
+		# Kilo en peso=4
 		if(self.cdu_pais!="0010001"):
 			return '0.0'
 		#import ipdb;ipdb.set_trace()
-		kilo_dolar = self.kiloEnDolar()
+		kilo_dolar = self.kiloEnDolar(8)
 		#kilo_dolar = Decimal(self.precio_libra_centavos) *  Decimal(self.factor)
 		valor = Decimal(kilo_dolar) * Decimal(self.precio_dolar)
 		#valor = truncar_decimales(valor,4)
@@ -213,13 +213,13 @@ class CalculoPrecios(object):
 			porcentaje = (1 + Decimal(self.porc_comercializadora)/100)
 			valor = float(valor) * float(porcentaje)
 
-		return str(truncar_decimales(valor,4))
+		return str(truncar_decimales(valor,decimales))
 	
-	def ToneladaEnDolar(self):
+	def ToneladaEnDolar(self,decimales=4):
 		if(self.cdu_pais!="0010002"):
 			return '0.0'
 		valor = Decimal(self.precio_tonelada_dolar) * Decimal(self.precio_dolar)
-		return str(truncar_decimales(valor,4))
+		return str(truncar_decimales(valor,decimales))
 		#return str(round(valor,4))
 
 	def kiloEnPesosFinal(self):
@@ -235,7 +235,7 @@ class CalculoPrecios(object):
 		#return str(round(valor,4))
 
 	def kiloEnPesosEU(self):
-		valor = Decimal(self.kiloEnPeso())
+		valor = Decimal(self.kiloEnPeso(8))
 		
 		valor = valor + Decimal(self.factor_impuesto)
 		return str(truncar_decimales(valor,4))
