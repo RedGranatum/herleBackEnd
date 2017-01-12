@@ -11,6 +11,7 @@ class VentaDetalle(models.Model):
 	num_rollo      = models.CharField(max_length=30,default="",blank=True)
 	peso_kg        = models.DecimalField(max_digits=13, decimal_places=5,default=0.00)
 	precio_neto    = models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
+	tipo_rollo     = models.ForeignKey(CatalogoDetalle,to_field='cdu_catalogo',default='0150000',related_name='tipoRollo_venta',limit_choices_to={'catalogos': 15}, on_delete=models.PROTECT)
 
 	@transaction.atomic
 	def save(self, *args, **kwargs):

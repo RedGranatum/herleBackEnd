@@ -13,8 +13,11 @@ from ventas_detalles.models import VentaDetalle
 from existencias.models import Existencia
 from catalogo_detalles.models import CatalogoDetalle
 from clientes_pagos.models import ClientesPago
+from inventarios.models import Inventario
 from ventas.serializers import VentaSerializer,VentaConDetalleNuevaSerializer,VentaConDetalleSerializer
 import datetime
+import json as simplejson
+from django.core import serializers
 
 class VentaConDetallesMixin(object):
 	queryset = Venta.objects.all()
@@ -23,7 +26,20 @@ class VentaConDetallesMixin(object):
 
 
 class VentasConDetallesIndividual(VentaConDetallesMixin,RetrieveUpdateDestroyAPIView):
-	pass	
+	def retrieve(self, request, *args, **kwargs):
+		self.object = self.get_object()
+		serializer = self.get_serializer(self.object,context={'open_tok': 'hola'})
+		a = Response(serializer.data)
+		b=1
+		for det in a.data['venta_detalles']:
+			tipo = Inventario.objects.filter(num_rollo = det['num_rollo'])
+			det['tipo'] = ''
+			if( tipo.count()>0):
+				tam = str(tipo[0].largo) if tipo[0].largo>0 else str(tipo[0].calibre) + ' x '  + str(tipo[0].ancho)
+				det['tipo']=tipo[0].material.descripcion1 + ' ' + tam + ' ' + det['tipo_rollo']['descripcion1']
+
+
+		return Response(a.data)
 
 class VentasLista(APIView):	
 	def get(self, request, format=None):
@@ -92,7 +108,6 @@ class VentasIndividual(APIView):
 			venta = self.get_object(pk)
 			serializer = VentaSerializer(venta)
 			return Response(serializer.data)
-		
 		queryset = Venta.objects.all()
 		serializer_class = VentaSerializer(queryset,many=True)
 		return  Response(serializer_class.data)
@@ -261,12 +276,12 @@ class VentasConDetallesInventarioConsulta(APIView):
 				from ventas_venta as ventac 
 				left join ventas_detalles_ventadetalle as ventad 
 				on ventac.id = ventad.venta_id
-			    join clientes_cliente as clie on clie.id = ventac.cliente_id
-			    left join inventarios_inventario as inv 
+				join clientes_cliente as clie on clie.id = ventac.cliente_id
+				left join inventarios_inventario as inv 
 				on ventad.num_rollo  = inv.num_rollo 
 				left join(
 				  select venta_id, sum((peso_kg) * (precio_neto)) as venta_neta
- 				  from ventas_detalles_ventadetalle
+				  from ventas_detalles_ventadetalle
 				  group by venta_id
 				  ) as suma_venta
 				  on suma_venta.venta_id = ventac.id

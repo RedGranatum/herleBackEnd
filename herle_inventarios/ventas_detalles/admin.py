@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import VentaDetalle
 					
 class VentaDetallesAdmin(admin.ModelAdmin):
-	list_display =("id","venta","num_rollo","peso_kg","precio_neto",)
+	list_display =("id","venta","num_rollo","peso_kg","precio_neto","tipo_rollo")
 
 	list_filter =('num_rollo',)
 
