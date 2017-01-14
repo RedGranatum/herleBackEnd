@@ -9,3 +9,8 @@ class VentaDetalleSerializer(serializers.ModelSerializer):
 		class Meta:
 			model = VentaDetalle
 			fields = ("id","venta","num_rollo","peso_kg","precio_neto","tipo_rollo")
+
+class VentaDetalleGuardarSerializer(serializers.ModelSerializer):	
+		class Meta:
+			model = VentaDetalle
+			fields = ("id","venta","num_rollo","peso_kg","precio_neto","tipo_rollo")

@@ -29,9 +29,8 @@ class VentasConDetallesIndividual(VentaConDetallesMixin,RetrieveUpdateDestroyAPI
 	def retrieve(self, request, *args, **kwargs):
 		self.object = self.get_object()
 		serializer = self.get_serializer(self.object,context={'open_tok': 'hola'})
-		a = Response(serializer.data)
-		b=1
-		for det in a.data['venta_detalles']:
+		respuesta = Response(serializer.data)
+		for det in respuesta.data['venta_detalles']:
 			tipo = Inventario.objects.filter(num_rollo = det['num_rollo'])
 			det['tipo'] = ''
 			if( tipo.count()>0):
@@ -39,7 +38,7 @@ class VentasConDetallesIndividual(VentaConDetallesMixin,RetrieveUpdateDestroyAPI
 				det['tipo']=tipo[0].material.descripcion1 + ' ' + tam + ' ' + det['tipo_rollo']['descripcion1']
 
 
-		return Response(a.data)
+		return Response(respuesta.data)
 
 class VentasLista(APIView):	
 	def get(self, request, format=None):
@@ -53,6 +52,8 @@ class VentasLista(APIView):
 		if serializer_class.is_valid():
 			try:
 				serializer_class.save()
+		
+
 				return Response(serializer_class.data, status=status.HTTP_201_CREATED)
 			except IntegrityError as ex:
 				return Response({"La clave ya existe"}, status=status.HTTP_403_FORBIDDEN)
@@ -86,8 +87,15 @@ class VentaConDetallesLista(APIView):
 				with transaction.atomic():
 					response = serializer_class.save()
 					cat.save()
-				datos = VentaConDetalleSerializer(response)		
-				return Response(datos.data, status=status.HTTP_201_CREATED)
+				datos = VentaConDetalleSerializer(response)
+				respuesta = Response(datos.data)
+				for det in respuesta.data['venta_detalles']:
+					tipo = Inventario.objects.filter(num_rollo = det['num_rollo'])
+					det['tipo'] = ''
+					if( tipo.count()>0):
+						tam = str(tipo[0].largo) if tipo[0].largo>0 else str(tipo[0].calibre) + ' x '  + str(tipo[0].ancho)
+						det['tipo']=tipo[0].material.descripcion1 + ' ' + tam + ' ' + det['tipo_rollo']['descripcion1']
+				return Response(respuesta.data, status=status.HTTP_201_CREATED)
 			except IntegrityError as ex:
 				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)
 			except Exception as ex:
@@ -144,7 +152,14 @@ class VentasIndividual(APIView):
 
 			
 				datos = VentaConDetalleSerializer(response)	
-				return Response(datos.data, status=status.HTTP_201_CREATED)
+				respuesta = Response(datos.data)
+				for det in respuesta.data['venta_detalles']:
+					tipo = Inventario.objects.filter(num_rollo = det['num_rollo'])
+					det['tipo'] = ''
+					if( tipo.count()>0):
+						tam = str(tipo[0].largo) if tipo[0].largo>0 else str(tipo[0].calibre) + ' x '  + str(tipo[0].ancho)
+						det['tipo']=tipo[0].material.descripcion1 + ' ' + tam + ' ' + det['tipo_rollo']['descripcion1']
+				return Response(respuesta.data, status=status.HTTP_201_CREATED)
 			except IntegrityError as ex:
 				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)
 			except Exception as ex:

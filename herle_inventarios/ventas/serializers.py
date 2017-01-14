@@ -4,7 +4,7 @@ from .models import Venta
 from ventas_detalles.models import VentaDetalle
 from clientes_pagos.models import ClientesPago
 
-from ventas_detalles.serializers import VentaDetalleSerializer
+from ventas_detalles.serializers import VentaDetalleSerializer,VentaDetalleGuardarSerializer
 from clientes.serializers import ClienteSerializer
 
 class VentaSerializer(serializers.ModelSerializer):
@@ -22,7 +22,7 @@ class VentaConDetalleNuevaSerializer(serializers.ModelSerializer):
 	fec_cancelacion = serializers.DateTimeField(format='%d/%m/%Y',input_formats=['%d/%m/%Y'])
 	
 
-	venta_detalles = VentaDetalleSerializer(many=True)
+	venta_detalles = VentaDetalleGuardarSerializer(many=True)
 
 	class Meta:
 		model = Venta
