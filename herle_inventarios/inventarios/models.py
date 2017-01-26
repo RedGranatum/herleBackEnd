@@ -62,7 +62,7 @@ class Inventario(models.Model):
 				cat.monto1=self.factor_impuesto
 				cat.save()
 
-	 			cat = CatalogoDetalle.objects.get(cdu_catalogo="0090004")
+				cat = CatalogoDetalle.objects.get(cdu_catalogo="0090004")
 				cat.monto1=self.precio_tonelada_dolar
 				cat.save()
 
