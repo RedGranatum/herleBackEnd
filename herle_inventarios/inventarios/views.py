@@ -27,8 +27,6 @@ class InventarioMixin(object):
 
 class InventarioLista(APIView):
 	def get(self, request, pk=None, format=None):
-		if(pk!=None):
-			print(pk)
 		queryset = Inventario.objects.all()
 		serializer_class = InventarioSerializer(queryset,many=True)
 		return  Response(serializer_class.data)

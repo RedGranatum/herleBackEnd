@@ -39,6 +39,32 @@ class Inventario(models.Model):
 
 	@transaction.atomic
 	def save(self, *args, **kwargs):
+		if(self.pk is None):
+			#import ipdb; ipdb.set_trace()
+			if(self.pais.cdu_catalogo=="0010001"):
+				#EU
+				cat = CatalogoDetalle.objects.get(cdu_catalogo="0090001")
+				cat.monto1=self.factor
+				cat.save()
+
+				cat = CatalogoDetalle.objects.get(cdu_catalogo="0090002")
+				cat.monto1=self.factor_impuesto
+				cat.save()
+				# Con comercializadora
+				if(self.con_comercializadora == True):
+					cat = CatalogoDetalle.objects.get(cdu_catalogo="0090003")
+					cat.monto1=self.porc_comercializadora
+					cat.save()
+			# 2.2045
+			# China
+			if(self.pais.cdu_catalogo=="0010002"):
+				cat = CatalogoDetalle.objects.get(cdu_catalogo="0090005")
+				cat.monto1=self.factor_impuesto
+				cat.save()
+
+	 			cat = CatalogoDetalle.objects.get(cdu_catalogo="0090004")
+				cat.monto1=self.precio_tonelada_dolar
+				cat.save()
 
 		conversor = Conversor();
 		#En inventarios siempre se tranforma de kg a libra 
