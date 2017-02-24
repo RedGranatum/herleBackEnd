@@ -65,6 +65,15 @@ class VentasLista(APIView):
 				return Response({'error': str(ex)}, status=status.HTTP_403_FORBIDDEN)
 		return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class VentasSiguienteNumero(APIView):	
+	def get(self, request, format=None):
+		cat=CatalogoDetalle.objects.get(cdu_catalogo = request.GET['empresa'])
+		cat.monto1 = cat.monto1 + 1
+		siguiente = str(int(cat.monto1)) # + cat.descripcion1[0:1]
+		#request.data["num_documento"] = siguiente
+		return  Response({'Siguiente': siguiente})
+
+
 class VentaConDetallesLista(APIView):
 	def get(self, request, pk=None, format=None):
 		if(pk!=None):
@@ -75,8 +84,11 @@ class VentaConDetallesLista(APIView):
 		return  Response(serializer_class.data)
 
 	def post(self, request, format=None):
+		if(request.data["num_documento"].isnumeric() == False):
+			return Response({'error': 'El Numero de documento debe ser un entero'}, status=status.HTTP_403_FORBIDDEN)
+
 		cat=CatalogoDetalle.objects.get(cdu_catalogo = request.data["empresa"])
-		cat.monto1 = cat.monto1 + 1
+		cat.monto1 = request.data["num_documento"]
 		siguiente = str(int(cat.monto1))  + cat.descripcion1[0:1]
 		request.data["num_documento"] = siguiente
 
