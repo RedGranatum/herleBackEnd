@@ -4,4 +4,5 @@ from compras_detalles import views
 urlpatterns =[
     url(r'^compras_detalles/$', views.CompraDetalleLista.as_view(),name="compras_detalles_lista"),
 	url(r'^compras_detalles/(?P<pk>[0-9]+)/$', views.CompraDetalleIndividual.as_view(),name='compras_detalles_individual'),
-]	
+	url(r'^compras_detalles/desvalidar/(?P<pk>[0-9]+)/$', views.CompraDetalleDesValidar.as_view(),name='compras_detalles_desvalidar'),
+]

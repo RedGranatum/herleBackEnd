@@ -40,7 +40,6 @@ class Inventario(models.Model):
 	@transaction.atomic
 	def save(self, *args, **kwargs):
 		if(self.pk is None):
-			#import ipdb; ipdb.set_trace()
 			if(self.pais.cdu_catalogo=="0010001"):
 				#EU
 				cat = CatalogoDetalle.objects.get(cdu_catalogo="0090001")
