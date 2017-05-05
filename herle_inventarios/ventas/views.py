@@ -1,5 +1,6 @@
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from django.db.models import Q
+from django.db.models import Sum,F,Q
+from django.db.models.functions import Coalesce
 from django.shortcuts import render
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError,ObjectDoesNotExist
@@ -139,7 +140,10 @@ class VentasIndividual(APIView):
 		if(venta.bln_activa==False):
 			request.data['bln_activa']='false'
 			request.data['fec_cancelacion']=venta.fec_cancelacion.strftime(formatmx)
-
+		else:
+			num_cancelaciones =  Venta.objects.filter(bln_activa=False).count()
+			#import ipdb;ipdb.set_trace()
+			request.data['num_documento']=  request.data['num_documento'] + '_C' +  str(num_cancelaciones)
 		serializer = VentaSerializer(venta, data =request.data)
 		if serializer.is_valid():
 			try:
@@ -147,22 +151,30 @@ class VentasIndividual(APIView):
 					actual_activa = venta.bln_activa
 					response = serializer.save()	
 					venta_detalles = VentaDetalle.objects.filter(venta = pk)
+					#venta_detalles= ClientesPago.objects.filter(ventas = 76)
+				
 					# Si se va a cancelar una venta que esta activa
 					if(actual_activa==True and request.data['bln_activa']=='false'):
 						for detalle in venta_detalles:
 							nueva_existencia = Existencia(num_rollo=detalle.num_rollo ,entrada_kg=0.0, salida_kg=(detalle.peso_kg*-1), id_operacion=detalle.id , operacion='can.venta')
 							nueva_existencia.save()
+						#saldo1 = ClientesPago.objects.filter(ventas = 76).aggregate(Sum('cargo', field="sum_cargo"),Sum('abono', field="sum_abono"))
+						num_venta = pk
+						cargo = ClientesPago.objects.filter(ventas = num_venta, observaciones='Cargo de la venta').aggregate(Sum('cargo', coalesce=F('sumacargo')) ) or 0
+						abono = ClientesPago.objects.filter(ventas = num_venta, observaciones='Cancelacion de venta').aggregate(Sum('abono', coalesce=F('sumabono')) ) or 0
+						saldo = (cargo['cargo__sum']  or 0) - (abono['abono__sum'] or 0)
+						#saldo = ClientesPago.objects.filter(ventas = pk)
+						if saldo > 0:
+							#saldo = ClientesPago.objects.get(ventas = venta.id)
+							# Hay que sumar el saldo que le queda
+							cliente_pago = ClientesPago()
+							cliente_pago.ventas = venta
+							cliente_pago.fecha = venta.fec_venta
+							cliente_pago.cargo = 0.0
+							cliente_pago.abono =  saldo
+							cliente_pago.observaciones = 'Cancelacion de venta'	
+							cliente_pago.save()
 
-						saldo = ClientesPago.objects.get(ventas = venta.id)
-						cliente_pago = ClientesPago()
-						cliente_pago.ventas = venta
-						cliente_pago.fecha = venta.fec_venta
-						cliente_pago.cargo = 0.0
-						cliente_pago.abono =  saldo.cargo
-						cliente_pago.observaciones = 'Cancelacion de venta'	
-						cliente_pago.save()
-
-			
 				datos = VentaConDetalleSerializer(response)	
 				respuesta = Response(datos.data)
 				for det in respuesta.data['venta_detalles']:
@@ -273,6 +285,7 @@ class VentasConDetallesInventarioConsulta(APIView):
 
 	def get(self ,request):
 		num_documento = request.GET['num_documento']
+		clave_cliente = request.GET['clave_cliente']
 
 		formatmx = "%d/%m/%Y"
 		formateu = "%Y%m%d"
@@ -285,7 +298,10 @@ class VentasConDetallesInventarioConsulta(APIView):
 		columnas_venta =  """
 				select  ventac.id,ventac.num_documento,ventac.cliente_id,to_char(ventac.fec_venta, 'DD-MM-YYYY') as fec_venta,ventac.bln_activa,
 						clie.nombre as cliente,clie.codigo as cliente_codigo,
-						CASE WHEN ventac.bln_activa = true THEN suma_venta.venta_neta ELSE 0 END AS venta_neta,						
+						CASE WHEN ventac.bln_activa = true THEN suma_venta.venta_neta ELSE 0 END AS venta_neta,	  
+						CASE WHEN ventac.bln_activa = true THEN suma_venta.venta_utilidad ELSE 0 END AS venta_utilidad,	  
+						CASE WHEN ventac.bln_activa = true THEN suma_venta.venta_iva ELSE 0 END AS venta_iva,	  
+											
 						CASE WHEN ventac.bln_activa = true THEN 'VENTA' ELSE 'CANCELADA' END AS estatus,
 						"""
 
@@ -296,9 +312,14 @@ class VentasConDetallesInventarioConsulta(APIView):
 		columnas_inventario = """ 
 				inv.id as inventario_id,inv.codigo_producto as inventario_codigo_producto,
 				inv.peso_lb as inventario_peso_lb ,inv.peso_kg as inventario_peso_kg,
-				inv.valor_final_kilo_pesos as inventario_precio_kg_compra
+				inv.valor_final_kilo_pesos as inventario_precio_kg_compra,
+				(ventad.peso_kg * inv.valor_final_kilo_pesos) as total_neto_compra,
+
+				((ventad.peso_kg * ventad.precio_neto )/1.16) as total_neto_venta,
+				(((ventad.peso_kg * ventad.precio_neto )/1.16) * 0.16) as iva,
+			    ((ventad.peso_kg * ventad.precio_neto )/ 1.16) - (ventad.peso_kg * inv.valor_final_kilo_pesos) as utilidad
 					"""
-		
+		#((ventadc.peso_kg * ventadc.precio_neto ) /1.16) as precio_neto_venta,
 		union =""" 
 				from ventas_venta as ventac 
 				left join ventas_detalles_ventadetalle as ventad 
@@ -307,22 +328,33 @@ class VentasConDetallesInventarioConsulta(APIView):
 				left join inventarios_inventario as inv 
 				on ventad.num_rollo  = inv.num_rollo 
 				left join(
-				  select venta_id, sum( (peso_kg) * (precio_neto/1.16) ) as venta_neta
-				  from ventas_detalles_ventadetalle
+				  select ventad.venta_id, 
+				  sum( (ventad.peso_kg * ventad.precio_neto)/1.16 ) as venta_neta,
+				  sum( ((ventad.peso_kg * ventad.precio_neto) /1.16)* 0.16) as venta_iva,
+
+				  sum( ((ventad.peso_kg * ventad.precio_neto)/ 1.16)  - ((ventad.peso_kg) * (inv.valor_final_kilo_pesos)) ) as venta_utilidad				  
+				  from ventas_detalles_ventadetalle as ventad
+				  left join inventarios_inventario as inv 
+				   on ventad.num_rollo  = inv.num_rollo 
 				  group by venta_id
 				  ) as suma_venta
 				  on suma_venta.venta_id = ventac.id
+
 				"""
 		condicion_ventas_fecha = """
 				where  ventac.fec_venta >= %s and ventac.fec_venta <=%s
-				order by ventac.id,ventad.id
 				"""
 
 		condicion_ventas_documento = """
 					where   lower(ventac.num_documento) = LOWER( %s)
 					order by ventac.id,ventad.id
 				"""
-		
+		#import ipdb;ipdb.set_trace()
+		if (clave_cliente != ""):
+			condicion_ventas_fecha = condicion_ventas_fecha + " and lower(clie.codigo) = LOWER(%s) "
+
+		condicion_ventas_fecha = condicion_ventas_fecha + " order by ventac.id,ventad.id"
+		#clave_cliente = request.GET['clave_cliente']	
 
 		condicion = condicion_ventas_fecha
 
@@ -335,6 +367,10 @@ class VentasConDetallesInventarioConsulta(APIView):
 
 		consulta = columnas_venta + columnas_detalle + columnas_inventario + union + condicion
 
-		cursor.execute(consulta,[fec_inicial,fec_final])
+		if(clave_cliente != ""):
+			cursor.execute(consulta,[fec_inicial,fec_final,clave_cliente])
+		else:
+			cursor.execute(consulta,[fec_inicial,fec_final])
+
 		resultado = self.dictfetchall(cursor)
 		return  Response(data=resultado, status=status.HTTP_201_CREATED)

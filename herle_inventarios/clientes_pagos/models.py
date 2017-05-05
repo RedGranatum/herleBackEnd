@@ -11,8 +11,8 @@ from catalogo_detalles.models import CatalogoDetalle
 class ClientesPago(models.Model):
 	ventas	   		 	    = models.ForeignKey(Venta,default="",related_name='venta_id_pagos', on_delete=models.PROTECT)		
 	fecha  				    = models.DateField(default='1900-01-01')
-	cargo    				= models.DecimalField(max_digits=10, decimal_places=2,default=0.0,validators=[MinValueValidator(Decimal('0.00'))])
-	abono    				= models.DecimalField(max_digits=10, decimal_places=2,default=0.0,validators=[MinValueValidator(Decimal('0.00'))])
+	cargo    				= models.DecimalField(max_digits=10, decimal_places=4,default=0.0,validators=[MinValueValidator(Decimal('0.00'))])
+	abono    				= models.DecimalField(max_digits=10, decimal_places=4,default=0.0,validators=[MinValueValidator(Decimal('0.00'))])
 	observaciones    		= models.CharField(max_length=100,default="",blank=True)	
 
 	def save(self, *args, **kwargs):
@@ -29,6 +29,7 @@ class ClientesPago(models.Model):
 	def validarAbonoNoEsMayorAlSaldo(self):
 		qr = ClientesPagoConsultas()
 		res = qr.saldo_agrupado_por_venta(self.ventas) 
+		#import ipdb;ipdb.set_trace()
 		if(self.abono > res['saldo']):
 			raise ValidationError('El abono no puede ser mayor al saldo de la factura')
 		return True

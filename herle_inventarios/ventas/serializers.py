@@ -35,7 +35,7 @@ class VentaConDetalleNuevaSerializer(serializers.ModelSerializer):
 		for detalle_datos in venta_detalles_datos:
 			importe_total = importe_total + (detalle_datos.get('peso_kg') * detalle_datos.get('precio_neto') )
 			VentaDetalle.objects.create(venta=venta, **detalle_datos)
-	
+		#import ipdb;ipdb.set_trace()
 		cliente_pago = ClientesPago()
 		cliente_pago.ventas = venta
 		cliente_pago.fecha = venta.fec_venta
@@ -43,7 +43,7 @@ class VentaConDetalleNuevaSerializer(serializers.ModelSerializer):
 		cliente_pago.abono = 0.0
 		cliente_pago.observaciones = 'Cargo de la venta'	
 		cliente_pago.save()
-
+		#import ipdb;ipdb.set_trace()
 		if(venta.cantidad_pago == 0):
 			cliente_pago = ClientesPago()
 			cliente_pago.ventas = venta
@@ -51,6 +51,7 @@ class VentaConDetalleNuevaSerializer(serializers.ModelSerializer):
 			cliente_pago.cargo = 0.0
 			cliente_pago.abono =  importe_total
 			cliente_pago.observaciones = 'Pago de contado'	
+			#import ipdb;ipdb.set_trace()
 			cliente_pago.save()
 
 		return venta
