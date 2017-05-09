@@ -218,7 +218,7 @@ class CostosPorNumRollo(APIView):
 			cliente.codigo as codigo_cliente,cliente.nombre as nombre_cliente, 
 			(ventadc.peso_kg * inv.valor_final_kilo_pesos) as precio_neto_compra,
 			((ventadc.peso_kg * ventadc.precio_neto ) /1.16) as precio_neto_venta,
-			((ventadc.peso_kg * ventadc.precio_neto ) /1.16) - (ventadc.peso_kg * inv.valor_final_kilo_pesos) as utilidad
+			((ventadc.peso_kg * ventadc.precio_neto )) - (ventadc.peso_kg * inv.valor_final_kilo_pesos) as utilidad
 			,exist.salidas_kg as total_salida_kg, exist.existencia_kg
 			, (exist.existencia_kg * inv.valor_final_kilo_pesos) as costo_inventario
 			from inventarios_inventario as inv 
@@ -317,7 +317,7 @@ class VentasConDetallesInventarioConsulta(APIView):
 
 				((ventad.peso_kg * ventad.precio_neto )/1.16) as total_neto_venta,
 				(((ventad.peso_kg * ventad.precio_neto )/1.16) * 0.16) as iva,
-			    ((ventad.peso_kg * ventad.precio_neto )/ 1.16) - (ventad.peso_kg * inv.valor_final_kilo_pesos) as utilidad
+			    ((ventad.peso_kg * ventad.precio_neto ) - (ventad.peso_kg * inv.valor_final_kilo_pesos) as utilidad
 					"""
 		#((ventadc.peso_kg * ventadc.precio_neto ) /1.16) as precio_neto_venta,
 		union =""" 
@@ -332,7 +332,7 @@ class VentasConDetallesInventarioConsulta(APIView):
 				  sum( (ventad.peso_kg * ventad.precio_neto)/1.16 ) as venta_neta,
 				  sum( ((ventad.peso_kg * ventad.precio_neto) /1.16)* 0.16) as venta_iva,
 
-				  sum( ((ventad.peso_kg * ventad.precio_neto)/ 1.16)  - ((ventad.peso_kg) * (inv.valor_final_kilo_pesos)) ) as venta_utilidad				  
+				  sum( ((ventad.peso_kg * ventad.precio_neto))  - ((ventad.peso_kg) * (inv.valor_final_kilo_pesos)) ) as venta_utilidad				  
 				  from ventas_detalles_ventadetalle as ventad
 				  left join inventarios_inventario as inv 
 				   on ventad.num_rollo  = inv.num_rollo 
