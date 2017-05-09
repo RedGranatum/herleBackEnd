@@ -317,7 +317,7 @@ class VentasConDetallesInventarioConsulta(APIView):
 
 				((ventad.peso_kg * ventad.precio_neto )/1.16) as total_neto_venta,
 				(((ventad.peso_kg * ventad.precio_neto )/1.16) * 0.16) as iva,
-			    ((ventad.peso_kg * ventad.precio_neto ) - (ventad.peso_kg * inv.valor_final_kilo_pesos) as utilidad
+			    ((ventad.peso_kg * ventad.precio_neto ) - (ventad.peso_kg * inv.valor_final_kilo_pesos)) as utilidad
 					"""
 		#((ventadc.peso_kg * ventadc.precio_neto ) /1.16) as precio_neto_venta,
 		union =""" 
