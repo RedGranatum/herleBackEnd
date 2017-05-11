@@ -143,7 +143,7 @@ class VentasIndividual(APIView):
 		else:
 			num_cancelaciones =  Venta.objects.filter(bln_activa=False).count()
 			#import ipdb;ipdb.set_trace()
-			request.data['num_documento']=  request.data['num_documento'] + '_C' +  str(num_cancelaciones)
+			request.data['num_documento']=  venta.num_documento + '_C' +  str(num_cancelaciones)
 		serializer = VentaSerializer(venta, data =request.data)
 		if serializer.is_valid():
 			try:
@@ -160,8 +160,8 @@ class VentasIndividual(APIView):
 							nueva_existencia.save()
 						#saldo1 = ClientesPago.objects.filter(ventas = 76).aggregate(Sum('cargo', field="sum_cargo"),Sum('abono', field="sum_abono"))
 						num_venta = pk
-						cargo = ClientesPago.objects.filter(ventas = num_venta, observaciones='Cargo de la venta').aggregate(Sum('cargo', coalesce=F('sumacargo')) ) or 0
-						abono = ClientesPago.objects.filter(ventas = num_venta, observaciones='Cancelacion de venta').aggregate(Sum('abono', coalesce=F('sumabono')) ) or 0
+						cargo = ClientesPago.objects.filter(ventas = num_venta).aggregate(Sum('cargo', coalesce=F('sumacargo')) ) or 0
+						abono = ClientesPago.objects.filter(ventas = num_venta).aggregate(Sum('abono', coalesce=F('sumabono')) ) or 0
 						saldo = (cargo['cargo__sum']  or 0) - (abono['abono__sum'] or 0)
 						#saldo = ClientesPago.objects.filter(ventas = pk)
 						if saldo > 0:
