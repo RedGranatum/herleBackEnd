@@ -213,11 +213,11 @@ class CostosPorNumRollo(APIView):
 			comprac.invoice,comprac.proveedor_id,
 			to_char(comprac.fec_real, 'DD-MM-YYYY') as fec_compra,
 			proveedor.codigo as codigo_proveedor,proveedor.nombre as nombre_proveedor,ventadc.peso_kg as venta_peso_kg,
-			(ventadc.precio_neto /1.16) as precio_kg_venta,ventadc.venta_id,
+			(ventadc.precio_neto ) as precio_kg_venta,ventadc.venta_id,
 			to_char(ventadc.fec_venta, 'DD-MM-YYYY') as fec_venta,ventadc.num_documento,ventadc.bln_activa,ventadc.cliente_id,
 			cliente.codigo as codigo_cliente,cliente.nombre as nombre_cliente, 
 			(ventadc.peso_kg * inv.valor_final_kilo_pesos) as precio_neto_compra,
-			((ventadc.peso_kg * ventadc.precio_neto ) /1.16) as precio_neto_venta,
+			((ventadc.peso_kg * ventadc.precio_neto ) ) as precio_neto_venta,
 			((ventadc.peso_kg * ventadc.precio_neto )) - (ventadc.peso_kg * inv.valor_final_kilo_pesos) as utilidad
 			,exist.salidas_kg as total_salida_kg, exist.existencia_kg
 			, (exist.existencia_kg * inv.valor_final_kilo_pesos) as costo_inventario
