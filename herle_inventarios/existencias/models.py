@@ -8,6 +8,7 @@ class Existencia(models.Model):
 	salida_kg      = models.DecimalField(max_digits=13, decimal_places=5,default=0.00)
 	id_operacion   = models.IntegerField(default=0)
 	operacion      = models.CharField(max_length=10,default="",blank=True)
-
+	fecha = models.DateField(default='1900-01-01')
+	
 	def __str__(self):
 		return self.num_rollo

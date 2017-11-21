@@ -1,3 +1,4 @@
+import datetime
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -98,6 +99,7 @@ class ExistenciaSobranteRollo(APIView):
 			return Response({mensaje}, status=status.HTTP_403_FORBIDDEN)
 	
 		nuevo_desperdicio = Existencia(num_rollo=num_rollo ,entrada_kg=0.0, salida_kg=existencia_kg, id_operacion=0 , operacion='sobrantes')
+		nuevo_desperdicio.fecha = datetime.datetime.now()
 		nuevo_desperdicio.save()
 		mensaje = 'Sobrante enviado a desperdicios'
 		return Response({mensaje}, status=status.HTTP_403_FORBIDDEN)
