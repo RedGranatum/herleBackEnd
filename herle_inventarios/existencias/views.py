@@ -4,6 +4,7 @@ from rest_framework import status
 from django.shortcuts import render
 from django.db.models import Sum
 from django.db import connection
+from catalogo_detalles.models import CatalogoDetalle
 from .models import Existencia
 
 # Create your views here.
@@ -77,3 +78,26 @@ class ExistenciaAgrupadaNumRollo(APIView):
 		resultado = Existencia.objects.values('num_rollo').filter(num_rollo__icontains =num_rollo).annotate(entradas_kd=Sum('entrada_kg'),salidas_kg=Sum('salida_kg'),existencia_kg=Sum('entrada_kg')-Sum('salida_kg'))
 		return  Response(data=resultado, status=status.HTTP_201_CREATED)
 
+class ExistenciaSobranteRollo(APIView):
+	def post(self, request, format=None):
+		num_rollo = request.data["num_rollo"]
+		det_existencia = Existencia.objects.values('num_rollo').filter(num_rollo=num_rollo).annotate(entradas_kd=Sum('entrada_kg'),salidas_kg=Sum('salida_kg'),existencia_kg=Sum('entrada_kg')-Sum('salida_kg'))
+		if(det_existencia.count() == 0):
+			mensaje = "No existe el rollo"
+			return Response({mensaje}, status=status.HTTP_403_FORBIDDEN)
+
+		existencia_kg = det_existencia[0]['existencia_kg']
+
+		# Revisar en los parametros lo minimo que se puede enviar a desperdicio
+		cat = CatalogoDetalle.objects.get(cdu_catalogo="0090008")
+		if(existencia_kg<=0):
+			mensaje = "No hay existencias para enviar a desperdicios"
+			return Response({mensaje}, status=status.HTTP_403_FORBIDDEN)
+		if(existencia_kg> cat.monto1):
+			mensaje = "Lo maximo que se puede enviar a desperdicios son " + str(cat.monto1) + " kg"
+			return Response({mensaje}, status=status.HTTP_403_FORBIDDEN)
+	
+		nuevo_desperdicio = Existencia(num_rollo=num_rollo ,entrada_kg=0.0, salida_kg=existencia_kg, id_operacion=0 , operacion='sobrantes')
+		nuevo_desperdicio.save()
+		mensaje = 'Sobrante enviado a desperdicios'
+		return Response({mensaje}, status=status.HTTP_403_FORBIDDEN)
