@@ -37,12 +37,13 @@ class ExistenciaAgrupada(APIView):
 		columnas ="""select exist.num_rollo as id, exist.num_rollo,inv.codigo_producto,inv.calibre,inv.ancho,
 			sum(exist.entrada_kg) as entradas_kg,sum(exist.salida_kg) as salidas_kg,
 			sum(exist.entrada_kg) - sum(exist.salida_kg) as existencia_kg,
-			 CASE WHEN (sum(exist.entrada_kg) - sum(exist.salida_kg)) <= desp.max_desp THEN 1 ELSE 0 END as bln_residuo,
+			coalesce(max(sobenv.en_residuo),0) as en_residuo,
+			 CASE WHEN (sum(exist.entrada_kg) - sum(exist.salida_kg)) <= desp.max_desp and coalesce(sum(sobenv.cant),0)=0  THEN 1 ELSE 0 END as bln_residuo,
 			 CASE WHEN sum(sobenv.cant)>0 THEN 1 ELSE 0 END as bln_residuo_env
 			from existencias_existencia as exist
 			join inventarios_inventario as inv on exist.num_rollo = inv.num_rollo
 			left join(
-				select num_rollo,count(*) cant from existencias_existencia
+				select num_rollo,count(*) cant,sum(salida_kg) as en_residuo from existencias_existencia
 				where operacion='sobrantes'
 				group by num_rollo
 			) as sobenv on sobenv.num_rollo = exist.num_rollo
