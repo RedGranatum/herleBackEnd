@@ -34,18 +34,26 @@ class ExistenciaAgrupada(APIView):
 	
 		cursor = connection.cursor()
 
-		columnas ="""
-			select exist.num_rollo as id, exist.num_rollo,inv.codigo_producto,inv.calibre,inv.ancho,
+		columnas ="""select exist.num_rollo as id, exist.num_rollo,inv.codigo_producto,inv.calibre,inv.ancho,
 			sum(exist.entrada_kg) as entradas_kg,sum(exist.salida_kg) as salidas_kg,
-			sum(exist.entrada_kg) - sum(exist.salida_kg) as existencia_kg
+			sum(exist.entrada_kg) - sum(exist.salida_kg) as existencia_kg,
+			 CASE WHEN (sum(exist.entrada_kg) - sum(exist.salida_kg)) <= desp.max_desp THEN 1 ELSE 0 END as bln_residuo,
+			 CASE WHEN sum(sobenv.cant)>0 THEN 1 ELSE 0 END as bln_residuo_env
 			from existencias_existencia as exist
 			join inventarios_inventario as inv on exist.num_rollo = inv.num_rollo
+			left join(
+				select num_rollo,count(*) cant from existencias_existencia
+				where operacion='sobrantes'
+				group by num_rollo
+			) as sobenv on sobenv.num_rollo = exist.num_rollo
+			cross join(select monto1 as max_desp from catalogo_detalles_catalogodetalle where cdu_catalogo='0090008') as desp
 			"""
+
 		condicion_por_num_rollo = "where lower(exist.num_rollo) like lower(%s)"	
 		
 		condicion_por_producto = "where lower(inv.codigo_producto) like lower(%s)"	
 
-		agrupado ="group by exist.num_rollo,inv.codigo_producto,inv.calibre,inv.ancho"
+		agrupado ="group by exist.num_rollo,inv.codigo_producto,inv.calibre,inv.ancho,desp.max_desp"
 
 		condicion =""
 		valor_busqueda =""
