@@ -25,13 +25,18 @@ class ExistenciaAgrupada(APIView):
 
 		producto = ''
 		num_rollo = ''
-
+		mayor_a = 0.0001
 		if 'producto' in request.GET:
 			producto = request.GET['producto']
 
 		if 'num_rollo' in request.GET:
 			num_rollo = request.GET['num_rollo']
+		
+		if 'mayor_a' in request.GET:
+			mayor_a = request.GET['mayor_a']
+			#import ipdb;ipdb.set_trace()
 	
+
 		cursor = connection.cursor()
 
 		columnas ="""select exist.num_rollo as id, exist.num_rollo,inv.codigo_producto,inv.calibre,inv.ancho,
@@ -55,7 +60,8 @@ class ExistenciaAgrupada(APIView):
 		condicion_por_producto = "where lower(inv.codigo_producto) like lower(%s)"	
 
 		agrupado ="group by exist.num_rollo,inv.codigo_producto,inv.calibre,inv.ancho,desp.max_desp"
-
+        
+		condicion_agrupado =" having (sum(exist.entrada_kg) - sum(exist.salida_kg)) >= %s"
 		condicion =""
 		valor_busqueda =""
 
@@ -67,7 +73,13 @@ class ExistenciaAgrupada(APIView):
 			valor_busqueda = '%' + producto + '%'
 			condicion = condicion_por_producto
 
-		consulta = columnas + condicion + agrupado
+
+		consulta = columnas + condicion + agrupado 
+
+		if(num_rollo == "" and producto =="" ):
+			valor_busqueda = mayor_a
+			consulta = consulta + condicion_agrupado
+
 
 		cursor.execute(consulta,[valor_busqueda])
 		#resultado= cursor.fetchall()
