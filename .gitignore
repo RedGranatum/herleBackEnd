@@ -3,3 +3,5 @@ __pycache__
 *.pyc
 herlebd
 venv/*
+herle.sublime-workspace 
+herle.sublime-project
