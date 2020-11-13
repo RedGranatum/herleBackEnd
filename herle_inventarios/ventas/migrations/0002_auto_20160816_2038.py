@@ -15,11 +15,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='venta',
             name='fec_cancelacion',
-            field=models.DateField(default=b'1900-01-01'),
+            field=models.DateField(default='1900-01-01'),
         ),
         migrations.AlterField(
             model_name='venta',
             name='cantidad_pago',
-            field=models.IntegerField(default=0, help_text=b''),
+            field=models.IntegerField(default=0, help_text=''),
         ),
     ]

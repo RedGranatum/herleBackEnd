@@ -8,6 +8,7 @@ urlpatterns =[
    url(r'^clientes_pagos/agrupados/adeudos/$', views.SaldoAgrupadoPorVentasConAdeudo.as_view(),name="clientes_pagos_agrupado_general_con_adeudo"),
    url(r'^calendario_pagos/$', views.ReporteCalendarioPagos.as_view(),name="clientes_pagos_calendario"),
    url(r'^calendario_acumulado_pagos/$', views.ReporteAcumuladoCalendarioPagos.as_view(),name="clientes_acumulado_pagos_calendario"),
-   
+   url(r'^clientes_limite_credito/(?P<cliente>[0-9]+)/$', views.ReporteLimiteCreditoClientes.as_view(),name="clientes_limite_creditos"),
+
 ]		
 

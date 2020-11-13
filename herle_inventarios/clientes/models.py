@@ -1,5 +1,7 @@
+from decimal import *
 from django.db import models
 from catalogo_detalles.models import CatalogoDetalle
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 class Cliente(models.Model):
 	codigo  = models.CharField(max_length=7,default="",unique=True,error_messages={'unique':"El codigo del Cliente ya existe"})
@@ -15,6 +17,7 @@ class Cliente(models.Model):
 	email   = models.EmailField(max_length=50,blank=True, default='')
 	banco  = models.ForeignKey(CatalogoDetalle,to_field='cdu_catalogo',default='',related_name='cliente_banco',limit_choices_to={'catalogos': 3}, on_delete=models.PROTECT)						
 	comentarios = models.CharField(max_length=200,blank=True,default='') 
+	limite_credito  = models.DecimalField(max_digits=13, decimal_places=4,default=0.0,validators=[MinValueValidator(Decimal('0.00'))])
 
 	def __str__(self):
 		return self.codigo

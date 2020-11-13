@@ -95,6 +95,24 @@ class ReporteAcumuladoCalendarioPagos(APIView):
 		resultado = self.dictfetchall(cursor)
 		return  Response(data=resultado, status=status.HTTP_201_CREATED)
 
+class ReporteLimiteCreditoClientes(APIView):
+	def dictfetchall(self,cursor):
+		"Return all rows from a cursor as a dict"
+		columns = [col[0] for col in cursor.description]
+		return [
+			dict(zip(columns, row))
+			for row in cursor.fetchall()
+		]
+
+	def get(self ,request, cliente):		
+		cursor = connection.cursor()
+		con_limite = ConsultaLimiteDeCredito(cliente)
+
+		consulta = con_limite.consulta
+		cursor.execute(consulta)		
+		resultado = self.dictfetchall(cursor)
+		return  Response(data=resultado, status=status.HTTP_201_CREATED)
+
 
 class ConsultaSaldos(object):
 	def __init__(self,tipo_reporte):
@@ -137,3 +155,35 @@ class ConsultaSaldos(object):
 			self.consulta = columnas_venta + union + condicion_ventas
 		if(self.tipo_reporte == "Acumulado"):
 			self.consulta = columnas_total + union + condicion_total
+
+
+class ConsultaLimiteDeCredito(object):
+	def __init__(self,id_cliente):
+		self.consulta = ""
+		self.cliente = id_cliente
+
+		condicion_cliente =  " and v.cliente_id = " + self.cliente + " " if int(self.cliente) >0 else ""
+
+		columnas =  """
+			select a.cliente_id, cli.nombre,
+			a.cargo,a.abono, a.cargo - a.abono as saldo,
+			cli.limite_credito,
+			cli.limite_credito - (a.cargo - a.abono) as limite_actual,
+			cli.cp, case when (a.cargo - a.abono)>cli.limite_credito then 'Limite' else 'Normal' end as limite
+			"""
+	
+		union ="""
+				from(
+					select v.cliente_id, sum(cp.cargo) as cargo, sum(cp.abono) as abono
+					from clientes_pagos_clientespago as cp
+					join ventas_venta as v on v.id = cp.ventas_id
+					where v.bln_activa = true
+			"""
+		union = union  + condicion_cliente 
+		
+		union = union +	"""group by v.cliente_id 
+		        	) as a	join clientes_cliente as cli 
+					on cli.id = a.cliente_id
+					where (a.cargo - a.abono)>0 
+					"""
+		self.consulta = columnas + union 

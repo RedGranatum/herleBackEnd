@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='existencia',
             name='fecha',
-            field=models.DateField(default=b'1900-01-01'),
+            field=models.DateField(default='1900-01-01'),
         ),
     ]
