@@ -5,6 +5,7 @@ from rest_framework import status
 from django.shortcuts import render
 from django.db.models import Sum
 from django.db import connection
+from rest_framework.permissions import IsAuthenticated
 from catalogo_detalles.models import CatalogoDetalle
 from .models import Existencia
 
@@ -12,6 +13,8 @@ from .models import Existencia
 #Existencia.objects.filter(num_rollo='AC22').aggregate(Sum('entrada_kg'),Sum('salida_kg'))
 #Existencia.objects.values('num_rollo').annotate(entradas_kd=Sum('entrada_kg'),salidas_kg=Sum('salida_kg'))
 class ExistenciaRollo(APIView):
+	permission_classes = (IsAuthenticated,)
+	#Authorization: Token 23213d
 	def get(self ,request,num_rollo):
 		resultado 		 = self.existencias_por_num_rollo(num_rollo)
 		return  Response(data=resultado, status=status.HTTP_201_CREATED)
@@ -21,6 +24,8 @@ class ExistenciaRollo(APIView):
 		return exist
 
 class ExistenciaAgrupada(APIView):
+	permission_classes = (IsAuthenticated,)
+
 	def get(self ,request):
 
 		producto = ''
@@ -96,6 +101,7 @@ class ExistenciaAgrupada(APIView):
 		]
 
 class ExistenciaAgrupadaNumRollo(APIView):
+	permission_classes = (IsAuthenticated,)
 	def get(self ,request,num_rollo):
 		resultado = Existencia.objects.values('num_rollo').filter(num_rollo__icontains =num_rollo).annotate(entradas_kd=Sum('entrada_kg'),salidas_kg=Sum('salida_kg'),existencia_kg=Sum('entrada_kg')-Sum('salida_kg'))
 		return  Response(data=resultado, status=status.HTTP_201_CREATED)

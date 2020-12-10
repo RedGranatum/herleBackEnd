@@ -19,6 +19,7 @@ from ventas.serializers import VentaSerializer,VentaConDetalleNuevaSerializer,Ve
 import datetime
 import json as simplejson
 from django.core import serializers
+from rest_framework.permissions import IsAuthenticated
 
 class VentaConDetallesMixin(object):
 	queryset = Venta.objects.all()
@@ -275,6 +276,7 @@ class CostosPorNumRollo(APIView):
 		]
 
 class VentasConDetallesInventarioConsulta(APIView):
+	permission_classes = (IsAuthenticated,)
 	def dictfetchall(self,cursor):
 		"Return all rows from a cursor as a dict"
 		columns = [col[0] for col in cursor.description]

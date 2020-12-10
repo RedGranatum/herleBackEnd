@@ -9,6 +9,7 @@ from rest_framework import status
 from inventarios.funciones import CalculoCodigo,CalculoPrecios,Conversor
 from inventarios.serializers import InventarioSerializer
 from inventarios.models import Inventario
+from rest_framework.permissions import IsAuthenticated
 
 class InventarioFiltrosMixin(object):
 	model = Inventario
@@ -26,6 +27,8 @@ class InventarioMixin(object):
 	serializer_class = InventarioSerializer
 
 class InventarioLista(APIView):
+	permission_classes = (IsAuthenticated,)
+
 	def get(self, request, pk=None, format=None):
 		queryset = Inventario.objects.all()
 		serializer_class = InventarioSerializer(queryset,many=True)

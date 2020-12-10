@@ -2,8 +2,10 @@ from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpda
 from django.db.models import Q
 from .models import Cliente
 from .serializers import ClienteSerializer
+from rest_framework.permissions import IsAuthenticated
 
 class ClienteDetalleMixin(object):
+	permission_classes = (IsAuthenticated,)
 	queryset = Cliente.objects.all()
 	serializer_class = ClienteSerializer
 
@@ -14,6 +16,7 @@ class ClienteIndividual(ClienteDetalleMixin,RetrieveUpdateDestroyAPIView):
 	pass
 
 class ClienteFiltrosMixin(object):
+	permission_classes = (IsAuthenticated,)
 	model = Cliente
 	serializer_class = ClienteSerializer
 

@@ -10,6 +10,7 @@ from compras.models import Compra
 from compras.serializers import CompraSerializer,CompraSimpleSerializer,CompraConDetalleSerializer,CompraConDetalleNuevaSerializer,CompraConDetalleModificacionSerializer
 import datetime
 from django.utils.timezone import get_current_timezone
+from rest_framework.permissions import IsAuthenticated
 
 class CompraMixin(object):
 	queryset = Compra.objects.all()
@@ -149,6 +150,8 @@ class CompraBusqueda(CompraFiltrosMixin,ListAPIView):
 
 
 class CompraConDetallesInventarioConsulta(APIView):
+	permission_classes = (IsAuthenticated,)
+
 	def dictfetchall(self,cursor):
 		"Return all rows from a cursor as a dict"
 		columns = [col[0] for col in cursor.description]
@@ -158,6 +161,7 @@ class CompraConDetallesInventarioConsulta(APIView):
 		]
 
 	def get(self ,request):
+		permission_classes = (IsAuthenticated,)
 		modulo  	= request.GET['modulo'] 
 		
 		#tz = get_current_timezone()
@@ -245,6 +249,7 @@ class CompraConDetallesInventarioConsulta(APIView):
 		return  Response(data=resultado, status=status.HTTP_201_CREATED)
 
 class ReporteCompraCalendarioAduana(APIView):
+	permission_classes = (IsAuthenticated,)
 	def dictfetchall(self,cursor):
 		"Return all rows from a cursor as a dict"
 		columns = [col[0] for col in cursor.description]

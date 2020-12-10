@@ -8,9 +8,10 @@ from rest_framework.views import APIView
 from django.db.models import Q
 from catalogos.models import Catalogo
 from catalogos.serializers import CatalogoSerializer
-
+from rest_framework.permissions import IsAuthenticated
 
 class CatalogoMixin(object):
+	permission_classes = (IsAuthenticated,)
 	queryset = Catalogo.objects.all()
 	serializer_class = CatalogoSerializer
 
@@ -32,12 +33,14 @@ class CatalogoIndividual(CatalogoMixin,RetrieveUpdateDestroyAPIView):
 
 
 class CatalogoFilter(filters.FilterSet):
+	permission_classes = (IsAuthenticated,)
 	valor_buscado = django_filters.CharFilter(name="nombre", lookup_type='icontains')
 	class Meta:
 		model = Catalogo
 		fields = ['valor_buscado']
 
 class CatalogoBusqueda(generics.ListAPIView):
+	permission_classes = (IsAuthenticated,)
 	queryset = Catalogo.objects.all()
 	serializer_class = CatalogoSerializer
 	filter_backends = (filters.DjangoFilterBackend,)

@@ -8,7 +8,7 @@ from django.db import IntegrityError
 from django.db import connection
 from .models import ClientesPago,ClientesPagoConsultas
 from .serializers import ClientesPagoSerializer
-
+from rest_framework.permissions import IsAuthenticated
 
 # class ClientesPagoDetalleMixin(object):
 # 	queryset = ClientesPago.objects.all()
@@ -60,6 +60,8 @@ class SaldoAgrupadoPorVentasConAdeudo(APIView):
 
 
 class ReporteCalendarioPagos(APIView):
+	permission_classes = (IsAuthenticated,)
+	
 	def dictfetchall(self,cursor):
 		"Return all rows from a cursor as a dict"
 		columns = [col[0] for col in cursor.description]
@@ -78,6 +80,7 @@ class ReporteCalendarioPagos(APIView):
 		return  Response(data=resultado, status=status.HTTP_201_CREATED)
 
 class ReporteAcumuladoCalendarioPagos(APIView):
+	permission_classes = (IsAuthenticated,)
 	def dictfetchall(self,cursor):
 		"Return all rows from a cursor as a dict"
 		columns = [col[0] for col in cursor.description]
@@ -96,6 +99,8 @@ class ReporteAcumuladoCalendarioPagos(APIView):
 		return  Response(data=resultado, status=status.HTTP_201_CREATED)
 
 class ReporteLimiteCreditoClientes(APIView):
+	permission_classes = (IsAuthenticated,)
+
 	def dictfetchall(self,cursor):
 		"Return all rows from a cursor as a dict"
 		columns = [col[0] for col in cursor.description]
