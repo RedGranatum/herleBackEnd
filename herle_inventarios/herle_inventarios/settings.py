@@ -24,7 +24,7 @@ SECRET_KEY = os.getenv('HERLE_SECRET_KEY')
 #'w3etm-!7@*g!4clbez-qr2&k!m_hsbkh*9va1!aw$1(azk^-!g'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 TEMPLATE_DEBUG = DEBUG
 
