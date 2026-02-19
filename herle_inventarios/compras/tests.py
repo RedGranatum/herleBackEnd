@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.db import connection
+from django.contrib.auth.models import User
 from datetime import datetime
 from rest_framework.test import APIClient
 from rest_framework import filters,generics,status
@@ -15,6 +16,9 @@ from compras_detalles.serializers import CompraDetalleSerializer
 class ComprasModelTest(TestCase):
 	def setUp(self):
 		self.client = APIClient()
+		user = User.objects.create_user(username='usuario1')
+		self.client.force_authenticate(user=user)
+
 		cursor = connection.cursor()
 		cursor.execute("ALTER SEQUENCE catalogos_catalogo_id_seq RESTART WITH 1;")
 		cursor.execute("ALTER SEQUENCE proveedores_proveedor_id_seq RESTART WITH 1;")
@@ -76,7 +80,7 @@ class ComprasModelTest(TestCase):
 		response = self.client.post('/compras/',data, format='json')
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 		self.assertEqual(response.data["invoice"],"BB2")
-		self.assertEqual(response.data["precio_dolar"],'17.12')
+		self.assertEqual(response.data["precio_dolar"],'17.1200')
 		self.assertEqual(response.data["fec_real"],"19/12/2014")
 
 		response = self.client.get('/compras/', format='json')

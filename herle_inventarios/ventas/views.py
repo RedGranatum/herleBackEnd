@@ -22,6 +22,7 @@ from django.core import serializers
 from rest_framework.permissions import IsAuthenticated
 
 class VentaConDetallesMixin(object):
+	permission_classes = (IsAuthenticated,)
 	queryset = Venta.objects.all()
 	#queryset =Compra.objects.select_related()
 	serializer_class = VentaConDetalleSerializer

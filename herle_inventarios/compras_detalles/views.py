@@ -9,8 +9,10 @@ from compras_detalles.models import CompraDetalle
 from compras_detalles.serializers import CompraDetalleSerializer
 from inventarios.models import Inventario
 from existencias.models import Existencia
+from rest_framework.permissions import IsAuthenticated
 
 class CompraDetalleMixin(object):
+	permission_classes = (IsAuthenticated,)
 	queryset = CompraDetalle.objects.all()
 	serializer_class = CompraDetalleSerializer
 

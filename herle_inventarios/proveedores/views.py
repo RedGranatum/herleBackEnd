@@ -6,9 +6,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from proveedores.models import Proveedor
 from proveedores.serializers import ProveedorSerializer
+from rest_framework.permissions import IsAuthenticated
 
 
 class ProveedorDetalleMixin(object):
+	permission_classes = (IsAuthenticated,)
 	queryset = Proveedor.objects.all()
 	serializer_class = ProveedorSerializer
 

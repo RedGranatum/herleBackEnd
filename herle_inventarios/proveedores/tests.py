@@ -1,4 +1,5 @@
 from django.db import connection
+from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -10,6 +11,9 @@ from proveedores.serializers import ProveedorSerializer
 class ProovedoresModelTest(TestCase):
 	def setUp(self): 
 		self.client = APIClient()
+		user = User.objects.create_user(username='usuario1')
+		self.client.force_authenticate(user=user)
+
 		cursor = connection.cursor()
 		cursor.execute("ALTER SEQUENCE catalogos_catalogo_id_seq RESTART WITH 1;")
 		cursor.execute("ALTER SEQUENCE proveedores_proveedor_id_seq RESTART WITH 1;")

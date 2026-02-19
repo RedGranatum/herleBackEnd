@@ -2,6 +2,7 @@ from django.test 		      import TestCase
 from rest_framework 		  import filters,generics,status
 from rest_framework.test 	  import APIClient
 from django.db 				  import connection
+from django.contrib.auth.models import User
 from catalogos.models 		  import Catalogo
 from catalogo_detalles.models import CatalogoDetalle
 from proveedores.models		  import Proveedor
@@ -14,6 +15,9 @@ from inventarios.serializers  import InventarioSerializer
 class InventariosCodigoTest(TestCase):
 	def setUp(self):
 		self.client = APIClient()
+		user = User.objects.create_user(username='usuario1')
+		self.client.force_authenticate(user=user)
+
 		cursor = connection.cursor()
 		cursor.execute("ALTER SEQUENCE catalogos_catalogo_id_seq RESTART WITH 1;")
 		cursor.execute("ALTER SEQUENCE proveedores_proveedor_id_seq RESTART WITH 1;")
@@ -443,7 +447,10 @@ class InventariosCodigoTest(TestCase):
 		self.crearCatalogoLargos("PAQUETERIA10","10","10")
 		self.crearCatalogoLargos("PAQUETERIA12","12","12")
 
-
+		self.crearCatalogoParametros("a")
+		self.crearCatalogoParametros("b")
+		self.crearCatalogoParametros("c")
+		self.crearCatalogoParametros("d")
 
 	def crearCatalogo(self,nombre_catalogo):
 		catalogo = Catalogo()
@@ -468,6 +475,9 @@ class InventariosCodigoTest(TestCase):
 
 	def crearCatalogoMoneda(self,desc1):
 		self.crearCatalogoDetalle(self.catalogoMonedas,desc1,'',0.0,0.0)
+
+	def crearCatalogoParametros(self,desc1):
+		self.crearCatalogoDetalle(self.catalogoParametros,desc1,'',0.0,0.0)
 
 	def crearCatalogoDetalle(self,tipo,desc1,desc2,monto1,monto2):
 		detCat = CatalogoDetalle()

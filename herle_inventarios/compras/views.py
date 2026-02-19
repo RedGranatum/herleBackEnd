@@ -13,6 +13,7 @@ from django.utils.timezone import get_current_timezone
 from rest_framework.permissions import IsAuthenticated
 
 class CompraMixin(object):
+	permission_classes = (IsAuthenticated,)
 	queryset = Compra.objects.all()
 	serializer_class = CompraSerializer
 
